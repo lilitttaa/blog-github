@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 
 const nextConfig = {
-  basePath:'blog-github',
+  basePath:'/blog-github',
   output: "export",
 };
 
