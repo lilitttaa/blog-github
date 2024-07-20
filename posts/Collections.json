@@ -12,6 +12,14 @@
     "Cover": "game.png"
   },
   {
+	"Name":"Cpp",
+	"Description":"...",
+	"List":[
+		"Pub_Note_CppPrimerChapter1"
+	],
+	"Cover":"coffee.png"
+  },
+  {
     "Name": "Program",
     "Description": "...",
     "List": [
