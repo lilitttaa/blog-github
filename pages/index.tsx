@@ -8,7 +8,7 @@ import { useRouter } from 'next/router'
 import Avatar from '@mui/material/Avatar'
 import Divider from '@mui/material/Divider'
 import { GetStaticProps } from 'next'
-import { Name2Id } from '../lib/utils'
+import { getImageUrl, Name2Id } from '../lib/utils'
 
 export default function Home({ allPostsData,collectionsInfo }: {
   allPostsData: {
@@ -32,7 +32,7 @@ export default function Home({ allPostsData,collectionsInfo }: {
         <span className='text-3xl font-serif absolute top-8'>
           WELCOME TO MR.ROBOT'S BLOG
         </span>
-        <img src='/images/bg.png' className={`${utilStyles.img}`}></img>
+        <img src={getImageUrl()+'/images/bg.png'} className={`${utilStyles.img}`}></img>
       </div>
       {/* <section className={utilStyles.headingMd}>…</section> */}
       <main>
@@ -41,7 +41,7 @@ export default function Home({ allPostsData,collectionsInfo }: {
             {collectionsInfo.map(({ Name, Description, Cover }) => (
               <li className='h-[30rem] flex flex-row '>
                 <img
-                  src={'/images/covers/'+Cover}
+                  src={getImageUrl()+'/images/covers/'+Cover}
                   className='object-cover h-full w-[46%] cursor-pointer'
                   onClick={() => router.push(`/collections/${Name2Id(Name)}`)
 				}
@@ -49,7 +49,7 @@ export default function Home({ allPostsData,collectionsInfo }: {
 
                 <div className='flex flex-col border-[1px] w-full border-gray-300 pt-4 pb-8 pl-12 pr-12 gap-2'>
                   <div className='flex flex-row gap-4 items-center h-[30%]'>
-                    <Avatar src='/broken-image.jpg' />
+                    <Avatar src={getImageUrl()+'/broken-image.jpg'} />
                     <div className='flex flex-col'>
                       <span>Admin</span>
                       <span>Mar 21, 2023 - 1min</span>
