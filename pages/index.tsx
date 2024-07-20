@@ -23,7 +23,7 @@ export default function Home({ allPostsData,collectionsInfo }: {
 	Cover: string,
 	List:string[]
   }[]
-}) {
+}) { 
   console.log(allPostsData)
   const router = useRouter()
   return (
