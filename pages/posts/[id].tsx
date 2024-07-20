@@ -138,8 +138,12 @@ const text2Spans = (pChild: ReactNode) => {
                   ul: ({ ...data }): JSX.Element => (
                     <ul className='list-disc list-inside' {...data} />
                   ),
+				  ol: ({ ...data }): JSX.Element => (
+					<ol className='list-decimal list-inside' {...data} />
+				  ),
                   li: ({ ...data }): JSX.Element => (
-                    <li className='text-lg font-serif mt-2 mb-2' {...data} />
+                    <li className='text-lg font-serif mt-2 mb-2' {
+						...data} />
                   ),
                   code ({ className, children, ...data }): JSX.Element {
                     const match = /language-(\w+)/.exec(className || '')
