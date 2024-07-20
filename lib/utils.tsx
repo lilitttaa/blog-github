@@ -6,5 +6,5 @@ export const getImageUrl = () => {
     if (process.env.NODE_ENV === 'development') {
         return ''
     }
-    return 'blog-github'
+    return '/blog-github'
 }
