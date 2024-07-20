@@ -6,7 +6,8 @@
       "Pub_Note_Lightmass",
       "Pub_Note_ShaderCompile",
       "Pub_Frame_UnrealTest",
-      "Pub_Frame_AutomationTest"
+      "Pub_Frame_AutomationTest",
+	  "Pub_Note_LarianCinematics"
     ],
     "Cover": "game.png"
   },
@@ -14,7 +15,6 @@
     "Name": "Program",
     "Description": "...",
     "List": [
-      "Pub_Note_LarianCinematics",
       "Pub_Note_TDD",
       "Pub_Note_Traits",
       "Pub_Note_MoveSemantics",
