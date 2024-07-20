@@ -10,6 +10,7 @@ import { oneLight } from 'react-syntax-highlighter/dist/cjs/styles/prism'
 import { ReactNode } from 'react'
 import { remark } from 'remark'
 import remarkGfm from 'remark-gfm'
+import { getImageUrl } from '../../lib/utils'
 export default function Post ({
   postData,
   meta
@@ -127,7 +128,9 @@ const text2Spans = (pChild: ReactNode) => {
                     >{text2Spans(children)}</div>
                   ),
                   img: ({ ...data }): JSX.Element => (
-                    <img alt={'img'} className='w-[100%] mt-2 mb-2' {...data} />
+                    <img alt={'img'} className='w-[100%] mt-2 mb-2' {...data}  src={
+						getImageUrl()+(data.src ? data.src : '')
+					}/>
                   ),
                   a: ({ ...data }): JSX.Element => (
                     <a className='text-gray-500 underline' {...data} />
