@@ -15,7 +15,8 @@
 	"Name":"Cpp",
 	"Description":"...",
 	"List":[
-		"Pub_Note_CppPrimerChapter1"
+		"Pub_Note_CppPrimerChapter1",
+		"Pub_Note_CppPrimerChapter2"
 	],
 	"Cover":"coffee.png"
   },
