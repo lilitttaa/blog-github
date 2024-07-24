@@ -7,29 +7,30 @@
       "Pub_Note_ShaderCompile",
       "Pub_Frame_UnrealTest",
       "Pub_Frame_AutomationTest",
-	  "Pub_Note_LarianCinematics"
+      "Pub_Note_LarianCinematics",
+      "Pub_Note_ObjectLifeTime"
     ],
     "Cover": "game.png"
   },
   {
-	"Name":"Cpp",
-	"Description":"...",
-	"List":[
-		"Pub_Note_CppPrimerChapter1",
-		"Pub_Note_CppPrimerChapter2",
-		"Pub_Note_CppPrimerChapter3",
-		"Pub_Note_CppPrimerChapter4",
-		"Pub_Note_CppPrimerChapter5"
-	],
-	"Cover":"coffee.png"
+    "Name": "Cpp",
+    "Description": "...",
+    "List": [
+      "Pub_Note_CppPrimerChapter1",
+      "Pub_Note_CppPrimerChapter2",
+      "Pub_Note_CppPrimerChapter3",
+      "Pub_Note_CppPrimerChapter4",
+      "Pub_Note_CppPrimerChapter5",
+      "Pub_Note_Traits",
+      "Pub_Note_MoveSemantics"
+    ],
+    "Cover": "coffee.png"
   },
   {
     "Name": "Program",
     "Description": "...",
     "List": [
       "Pub_Note_TDD",
-      "Pub_Note_Traits",
-      "Pub_Note_MoveSemantics",
       "Pub_nips_2023_poster_abstract",
       "Pub_Frame_ReinforcementLearning"
     ],
