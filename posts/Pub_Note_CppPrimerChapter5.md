@@ -147,7 +147,7 @@ try{
 
 ### 常见的异常类
 
-```cpp
+``` cpp
 exception //定义在exception头文件中，只报告异常，不提供额外信息
 bad_alloc //定义在new头文件中，内存分配失败
 bad_cast //定义在typeinfo头文件中，类型转换错误
