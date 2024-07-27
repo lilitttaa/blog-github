@@ -1,5 +1,5 @@
 ---
-title: Object Life Time
+title: Object Lifetime
 ---
 
 有个对象的生命周期由其他地方管理，如果想要共享对象的所有权，可以直接使用 UE 的 GC 系统，或者使用 SharedPtr。定义一个新的带反射的容器或者对象即可。但如果希望对象的生命周期由其他地方管理，可以使用 TWeakObjectPtr。

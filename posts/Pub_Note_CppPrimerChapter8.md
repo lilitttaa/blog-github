@@ -160,7 +160,7 @@ sstr << "Hello, world!"; // 向 sstr 写入数据
 string s1;
 sstr >> s1;
 cout<< s1 <<endl; // Hello,
-cout<<sstr.str()<<endl; // world!
+cout<<sstr.str()<<endl; // Hello, world!
 
 string s2 = sstr.str(); // 返回 sstr 中的 string 副本
 cout<<s2<<endl; // Hello, world!
