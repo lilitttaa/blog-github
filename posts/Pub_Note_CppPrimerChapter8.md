@@ -110,4 +110,62 @@ ostream *old_tie = cin.tie(nullptr); // cin 和 cout 解除关联
 
 ## 文件输入输出
 
+常用 API：
+
+```cpp
+ifstream in("file.txt"); // 构造一个ifstream对象并打开文件
+ofstream out; // 输出文件流，没有关联文件
+fstream io("file.txt", fstream::in | fstream::out); // 读写文件流
+ofstream out;
+out.open("file.txt"); // 打开文件
+out.close(); // 关闭文件
+out.is_open(); // 检查文件是否打开
+```
+
+当一个 fstream 对象被销毁时，close 会自动被调用。
+
+file mode：
+
+```cpp
+in // 以读模式打开
+out // 以写模式打开
+app // 每次写操作前定位到文件末尾
+ate // 打开文件后立即定位到文件末尾
+trunc // 截断文件
+binary // 以二进制模式打开
+```
+
+它们之间的关系如下：
+
+- 只可以对 ofstream 或 fstream 对象设定 out 模式
+- 只可以对 ifstream 或 fstream 对象设定 in 模式
+- trunc 模式只能用 out
+- 没有 trunc 时才能设 app
+- app 下默认 out
+- 默认情况下使用 trunc，除非指定 app
+- ate 和 binary 模式使用比较自由
+- out 默认会清空文件内容
+- 保留被 ofstream 打开的文件中已有数据的唯一方法是显式指定 app 或 in 模式。
+
+```cpp
+ofstream out("file.txt", ofstream::app); // 以 app 模式打开
+ofstream out("file.txt", ofstream::app | ofstream::binary); // 以 app 和 binary 模式打开
+```
+
 ## string 流
+
+``` cpp
+stringstream sstr;
+sstr << "Hello, world!"; // 向 sstr 写入数据
+string s1;
+sstr >> s1;
+cout<< s1 <<endl; // Hello,
+cout<<sstr.str()<<endl; // world!
+
+string s2 = sstr.str(); // 返回 sstr 中的 string 副本
+cout<<s2<<endl; // Hello, world!
+
+string s3("Hello, world!2");
+sstr.str(s3); // 将 sstr 重置为 s3
+cout<<sstr.str()<<endl; // Hello, world!2
+```
