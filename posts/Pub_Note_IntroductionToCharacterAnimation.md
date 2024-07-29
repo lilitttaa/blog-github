@@ -110,4 +110,65 @@ Motion Graphs 本质上是在动作这个层面进行切换，而 Motion Matchin
 - 物理合理性差
 - 不能很好的处理与环境的交互
 
-## Others
+## Ragdoll Simulation
+
+Ragdoll Simulation 常用于处理角色死亡或失去意识，当然也不只是这些，也可以用于突发事件，例如：被绊了一下 0.2s 左右反应过来。参考：[RagDoll Realistic - Unreal engine 4](https://www.youtube.com/watch?v=4pWBtoGzwwE)
+
+## Physics-based Animation
+
+Physics-based Animation 的一些应用：
+![Alt text](image-22.png)
+![Alt text](image-23.png)
+
+## Keyframe Control
+
+要将一个人的整个神经系统、肌肉系统建模出来是很困难的：
+![Alt text](image-24.png)
+通常会使用简化的模型来表达：
+![Alt text](image-25.png)
+我们使用关节力矩来描述肌肉对骨骼的作用：
+![Alt text](image-26.png)
+其中 Proporational-Derivative (PD) 控制是常用的一种控制方法：
+![Alt text](image-27.png)
+比如说我想把我的手从这个高度举到这个高度，那我需要给我的关节上加多少力呢？这就是 PD 控制要解决的问题。
+早期的 Physics-based Animation 通常就会使用这种方法，例如给出一个目标高度的轨迹，采用 PD 控制，就可以生成对每个关节的力矩。
+![Alt text](image-28.png)
+不过，这种方法控制是相当困难的，可以查看这个小游戏：[QWOP](https://www.youtube.com/watch?v=YbYOsE7JyXs)
+![Alt text](image-29.png)
+
+## Trajectory Optimization
+
+让计算机通过运算的方式来算出比较合适的控制的轨迹：
+
+[Guided Learning of Control Graphs for Physics-based Characters (SIGGRAPH 2016)](https://www.youtube.com/watch?v=QJbCfhRkcyg)
+这种方法可以添加一些其他的变量，映射到新的虚拟角色上：
+![Alt text](image-30.png)
+设置脚的落点：[Optimal gait and form for animal locomotion](https://dl.acm.org/doi/10.1145/1531326.1531366)
+但这种方法的问题在于需要求解一个非常高维的非线性函数，非常难解也非常耗时。
+![Alt text](image-31.png)
+
+## Abstract Methods
+
+在机器人领域，会使用非常简化的模型来把想要的动作描述出来，然后利用这个简化模型来知道角色改怎么控制：
+![Alt text](image-32.png)
+这种方法的缺点在于针对每个动作都需要深入的做研究。
+
+## Reinforcement Learning
+
+RL 的方法让一个 Agent 不断的跟环境进行交互学习
+![Alt text](image-33.png)
+![Alt text](image-34.png)
+只要是给他一个参考的运动数据，他就可以学到这段动作。
+参考：[SIGGRAPH 2018: DeepMimic paper (main video)](https://www.youtube.com/watch?v=vppFvq2quQ0)
+
+这种方法本质上还是在一个物理仿真的环境下实现对运动数据的复现。
+
+类似的，我们可以在这个基础上引入 Motion Graphs 或者 Motion Matching，例如：角色撞到障碍物后自己选择动作来调整平衡。
+![Alt text](image-35.png)
+参考：[Learning to Schedule Control Fragments for Physics-Based Characters Using Deep Q-Learning](https://dl.acm.org/doi/10.1145/3072959.3083723)
+
+## Generative Control Policies
+
+不同于 Keyframe-based 的 Generative 方法，因为 Physics-based 的方法是不能直接控制姿态，所以这个 Model 实际上是在猜测在这样的数据下，它怎么去控制这个角色，输出怎么样的力矩。
+![Alt text](image-36.png)
+![Alt text](image-37.png)
