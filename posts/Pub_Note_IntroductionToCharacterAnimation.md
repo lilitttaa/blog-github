@@ -140,12 +140,11 @@ Physics-based Animation 的一些应用：
 
 ## Trajectory Optimization
 
-让计算机通过运算的方式来算出比较合适的控制的轨迹：
-
-[Guided Learning of Control Graphs for Physics-based Characters (SIGGRAPH 2016)](https://www.youtube.com/watch?v=QJbCfhRkcyg)
+让计算机通过运算的方式来算出比较合适的控制的轨迹：[Guided Learning of Control Graphs for Physics-based Characters (SIGGRAPH 2016)](https://www.youtube.com/watch?v=QJbCfhRkcyg)
 这种方法可以添加一些其他的变量，映射到新的虚拟角色上：
 ![Alt text](image-30.png)
-设置脚的落点：[Optimal gait and form for animal locomotion](https://dl.acm.org/doi/10.1145/1531326.1531366)
+还可以指定脚的落点：[Optimal gait and form for animal locomotion](https://dl.acm.org/doi/10.1145/1531326.1531366)
+
 但这种方法的问题在于需要求解一个非常高维的非线性函数，非常难解也非常耗时。
 ![Alt text](image-31.png)
 
