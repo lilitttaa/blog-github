@@ -77,7 +77,7 @@ const text2Spans = (pChild: ReactNode) => {
 	const lines = text.split('\n')
 	const spans = []
 	for (let i = 0; i < lines.length; i++) {
-		spans.push(<p key={i} className='text-lg font-serif mt-1 mb-1'>{lines[i]}</p>)
+		spans.push(<p key={i} className='text-lg font-sans mt-1 mb-1'>{lines[i]}</p>)
 	}
 	return spans
 }
@@ -136,10 +136,10 @@ const text2Spans = (pChild: ReactNode) => {
                     <a className='text-gray-500 underline font-sans' {...data} />
                   ),
                   ul: ({ ...data }): JSX.Element => (
-                    <ul className='list-disc list-inside' {...data} />
+                    <ul className='list-disc list-inside font-sans' {...data} />
                   ),
 				  ol: ({ ...data }): JSX.Element => (
-					<ol className='list-decimal list-inside' {...data} />
+					<ol className='list-decimal list-inside font-sans' {...data} />
 				  ),
                   li: ({ ...data }): JSX.Element => (
                     <li className='text-lg mt-2 mb-2 font-sans' {
