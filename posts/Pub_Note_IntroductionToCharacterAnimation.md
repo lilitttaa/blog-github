@@ -150,7 +150,7 @@ Physics-based Animation 的一些应用：
 
 ## Abstract Methods
 
-在机器人领域，会使用非常简化的模型来把想要的动作描述出来，然后利用这个简化模型来知道角色改怎么控制：
+在机器人领域，会使用非常简化的模型来把想要的动作描述出来，然后利用这个简化模型来指导角色该怎么控制：
 ![Alt text](image-32.png)
 这种方法的缺点在于针对每个动作都需要深入的做研究。
 
@@ -159,7 +159,7 @@ Physics-based Animation 的一些应用：
 RL 的方法让一个 Agent 不断的跟环境进行交互学习
 ![Alt text](image-33.png)
 ![Alt text](image-34.png)
-只要是给他一个参考的运动数据，他就可以学到这段动作。
+只要给他一个参考的运动数据，他就可以学到这段动作。
 参考：[SIGGRAPH 2018: DeepMimic paper (main video)](https://www.youtube.com/watch?v=vppFvq2quQ0)
 
 这种方法本质上还是在一个物理仿真的环境下实现对运动数据的复现。

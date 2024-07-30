@@ -103,18 +103,133 @@ TODO
 - 引用
 - 值，指针也是一种值
 
-
 ### 传值
-函数对形参做的所有操作都不会影响实参。
+
+函数对形参做的所有操作都不会影响实参，指针也是一种值，不过由于它的值是一个地址，所以可以通过地址访问实参。
+
+```cpp
+void reset(int i)
+{
+	i = 0; // 值传递，不会改变实参的值
+}
+
+void reset(int* i)
+{
+	i = 0; // 值传递，不会改变实参的值
+	*i = 0; // i是指针，可以通过地址修改实参的值
+}
+```
 
 ### 传递引用
 
-形参传递时非引用类型的顶层 const 会被忽略，以下两种定义是重复的：
+操作引用实际上是在操作引用所绑定的对象
+
+```cpp
+void reset(int& i)
+{
+	i = 0; // 引用传递，会改变实参的值
+}
+```
+
+- 使用引用可以避免拷贝，提高效率
+- 使用引用可以返回多个值
+
+```cpp
+void multi_return(int& a, int& b)
+{
+	a = 1;
+	b = 2;
+}
+int a, b;
+multi_return(a, b);
+```
+
+如果不想改变实参的值，尽量使用 const 引用：
+
+- 普通引用既可以表示传参，也可以表示返回值，会误导调用者
+- 不能把 const 对象、字面值、需要类型转换的对象传递给普通的引用形参
+
+```cpp
+void is_sentence(const string& s){...}
+is_sentence("hello world"); // 正确
+void is_sentence(string& s){...}
+is_sentence("hello world"); // 错误
+```
+
+和其他初始化过程一样，当用实参初始化形参时会忽略掉顶层 const。当形参有顶层 const 时，传给它常量对象或者非常量对象都可以，以下两个函数是重复的：
 
 ```cpp
 void f(const int i);
 void f(int i);
 ```
 
+### 数组形参
 
+因为数组会被转换成指针，所以当我们为函数传递一个数组时，实际上传递的是指向数组首元素的指针。以下三个函数是等价的：
 
+```cpp
+void print(const int*);
+void print(const int[]);
+void print(const int[10]); // 这里的10是一个提示，实际上没有用
+
+int i = 0, j[2] = {0, 1};
+print(&i);
+print(j);
+```
+
+因为传递指针没有大小信息，因此通常会采用下面三种方法：
+
+```cpp
+void print(const char* begin, const char* end){
+	while(begin != end){
+		cout << *begin++ << endl;
+	}
+}
+
+void print(const char* begin, size_t size){
+	for(size_t i = 0; i < size; ++i){
+		cout << begin[i] << endl;
+	}
+}
+
+void print(const char* begin){ // C风格字符串，以空字符结尾
+	while(*begin){
+		cout << *begin++ << endl;
+	}
+}
+```
+
+数组引用形参，写作 const int (&arr)[10] 而不是 const int &arr[10]：
+
+```cpp
+void print(const int (&arr)[3]){ // 数组的大小也是构成数组类型的一部分
+	for(auto i : arr){
+		cout << i << endl;
+	}
+}
+int i[] = {0,1};
+int j[] = {0,1,2};
+print(i); // 错误，数组大小不匹配
+print(j); // 正确
+```
+
+### 多维数组
+
+C++ 中没有真正的多维数组，多维数组是数组的数组。因此同样的，多维数组的形参本质上是指向数组的指针。
+
+```cpp
+void print(int (*matrix)[10], size_t rowSize){
+	for(size_t i = 0; i < rowSize; ++i){
+		for(size_t j = 0; j < 10; ++j){
+			cout << matrix[i][j] << endl;
+		}
+	}
+}
+```
+
+再次区别一下：
+
+```cpp
+int* matrix[10]; // 指针数组，每个元素都是指针
+int (*matrix)[10]; // 指向数组的指针
+```
