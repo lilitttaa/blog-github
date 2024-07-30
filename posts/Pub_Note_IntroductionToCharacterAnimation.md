@@ -1,5 +1,5 @@
 ---
-title: Introduction To Character Animation
+title: Games105 1.Introduction To Character Animation
 ---
 
 ## 3D Computer Animation
