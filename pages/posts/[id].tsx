@@ -123,7 +123,7 @@ const text2Spans = (pChild: ReactNode) => {
                   ),
                   p: ({children, ...data }): JSX.Element => (
                     <div
-                      className='mt-2 mb-2 font-serif'
+                      className='mt-2 mb-2 text-lg font-serif'
                       {...data}
                     >{text2Spans(children)}</div>
                   ),
@@ -133,7 +133,7 @@ const text2Spans = (pChild: ReactNode) => {
 					}/>
                   ),
                   a: ({ ...data }): JSX.Element => (
-                    <a className='text-gray-500 underline font-serif' {...data} />
+                    <a className='text-gray-500 underline text-lg font-serif' {...data} />
                   ),
                   ul: ({ ...data }): JSX.Element => (
                     <ul className='list-disc list-inside font-serif' {...data} />
