@@ -110,6 +110,8 @@ Generative Model 可以用大量的动作数据去训练一个模型，比如可
 - 物理合理性差
 - 不能很好的处理与环境的交互
 
+接下来我们开始谈论 Physics-based approaches
+
 ## Ragdoll Simulation
 
 Ragdoll Simulation 常用于处理角色死亡或失去意识，当然也不只是这些，也可以用于突发事件，例如：被绊了一下 0.2s 左右反应过来。参考：[RagDoll Realistic - Unreal engine 4](https://www.youtube.com/watch?v=4pWBtoGzwwE)
