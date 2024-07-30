@@ -77,7 +77,7 @@ const text2Spans = (pChild: ReactNode) => {
 	const lines = text.split('\n')
 	const spans = []
 	for (let i = 0; i < lines.length; i++) {
-		spans.push(<p key={i} className='text-lg font-sans mt-1 mb-1'>{lines[i]}</p>)
+		spans.push(<p key={i} className='text-lg font-serif mt-1 mb-1'>{lines[i]}</p>)
 	}
 	return spans
 }
@@ -95,14 +95,14 @@ const text2Spans = (pChild: ReactNode) => {
         <div className='w-full'>
           <div className='pt-4 pb-12 pl-[25%] pr-[25%]'>
             <div id='md'>
-				<div className='text-4xl font-black font-sans mt-4 mb-8'>{meta.title}</div>
+				<div className='text-4xl font-black font-serif mt-4 mb-8'>{meta.title}</div>
               <Markdown
                 className={''}
 				remarkPlugins={[remarkGfm]}
                 components={{
                   h2: ({children, ...data }): JSX.Element => (
                     <h2
-                      className='text-2xl font-black font-sans mt-4 mb-4'
+                      className='text-2xl font-black font-serif mt-4 mb-4'
                       {...data}
                     >
 						{'# ' + children}
@@ -110,20 +110,20 @@ const text2Spans = (pChild: ReactNode) => {
                   ),
                   h3: ({children, ...data }): JSX.Element => (
                     <h3
-                      className='text-xl font-black font-sans mt-4 mb-4'
+                      className='text-xl font-black font-serif mt-4 mb-4'
 					  
                       {...data}
                     >{'# ' + children}</h3>
                   ),
                   h4: ({children, ...data }): JSX.Element => (
                     <h4
-                      className='text-lg font-black font-sans mt-4 mb-4'
+                      className='text-lg font-black font-serif mt-4 mb-4'
                       {...data}
                     >{'# ' + children}</h4>
                   ),
                   p: ({children, ...data }): JSX.Element => (
                     <div
-                      className='mt-2 mb-2 font-sans'
+                      className='mt-2 mb-2 font-serif'
                       {...data}
                     >{text2Spans(children)}</div>
                   ),
@@ -133,16 +133,16 @@ const text2Spans = (pChild: ReactNode) => {
 					}/>
                   ),
                   a: ({ ...data }): JSX.Element => (
-                    <a className='text-gray-500 underline font-sans' {...data} />
+                    <a className='text-gray-500 underline font-serif' {...data} />
                   ),
                   ul: ({ ...data }): JSX.Element => (
-                    <ul className='list-disc list-inside font-sans' {...data} />
+                    <ul className='list-disc list-inside font-serif' {...data} />
                   ),
 				  ol: ({ ...data }): JSX.Element => (
-					<ol className='list-decimal list-inside font-sans' {...data} />
+					<ol className='list-decimal list-inside font-serif' {...data} />
 				  ),
                   li: ({ ...data }): JSX.Element => (
-                    <li className='text-lg mt-2 mb-2 font-sans' {
+                    <li className='text-lg mt-2 mb-2 font-serif' {
 						...data} />
                   ),
                   code ({ className, children, ...data }): JSX.Element {
