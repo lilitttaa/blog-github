@@ -94,7 +94,7 @@ Motion Graphs 本质上是在动作这个层面进行切换，而 Motion Matchin
 
 ## Generative Model
 
-用大量的动作数据去训练一个模型，比如可以录一两个小时的动作，然后直接丢给模型，而 Motion Matching 在动作库很大的情况下效果是会变差的。
+Generative Model 可以用大量的动作数据去训练一个模型，比如可以录一两个小时的动作，然后直接丢给模型。而这一点对于 Motion Matching 来说是困难的，在动作库很大的情况下其效果会变差。
 ![alt text](image-20.png)
 参考：[[SIGGRAPH 2020] Local Motion Phases for Learning Multi-Contact Character Movements](https://www.youtube.com/watch?v=Rzj3k3yerDk)
 
