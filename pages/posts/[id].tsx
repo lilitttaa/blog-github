@@ -77,6 +77,9 @@ const text2Spans = (pChild: ReactNode) => {
 	const lines = text.split('\n')
 	const spans = []
 	for (let i = 0; i < lines.length; i++) {
+		if(i===0 && lines[i].trim()===''){
+			continue
+		}
 		spans.push(<p key={i} className='text-lg font-serif mt-1 mb-1'>{lines[i]}</p>)
 	}
 	return spans
