@@ -559,3 +559,130 @@ int arr2[scale(i)]; // 错误，返回值不是常量表达式
 内联函数和 constexpr 函数定义需要放在头文件中。
 
 ### 调试帮助
+
+assert 是预处理宏，用于调试程序，它依赖于一个名为 NDEBUG 的预处理变量：
+
+```cpp
+#include <cassert>
+int main()
+{
+	assert(1>0); // NDEBUG未定义，assert会执行
+}
+
+#define NDEBUG
+#include <cassert>
+int main()
+{
+	assert(1>0); // NDEBUG定义了，assert不会执行
+}
+```
+
+```cpp
+__func__ // 由C++编译器定义，表示当前函数的名字
+__LINE__ // 由预处理器定义，表示当前行号，整数字面值
+__FILE__ // 由预处理器定义，表示当前文件名，字符串字面值
+__TIME__ // 由预处理器定义，表示当前时间，字符串字面值
+__DATE__ // 由预处理器定义，表示当前日期，字符串字面值
+```
+
+## 函数匹配
+
+1. 选定候选函数集，要求：
+   1. 与被调用的函数同名
+   2. 声明在调用点可见
+2. 选定可行函数，要求：
+   1. 形参与实参的数量相同，除非有默认实参
+   2. 实参的类型与对应的形参类型相同，或者能转换成形参的类型
+3. 寻找最佳匹配，即实参与形参类型越接近越好，要求：
+   1. 所有参数都不弱于其他候选函数的对应参数
+   2. 至少有一个参数比其他候选函数的对应参数更好
+
+```cpp
+void func(int, int);
+void func(double, double);
+func(1,2); // int, int
+func(1.0, 2.0); // double, double
+func(1, 2.0); // 错误，二义性
+```
+
+最佳匹配的规则排序如下：
+
+1. 精确匹配，包括：
+   - 类型完全相同
+   - 实参从数组或函数转换成指针
+   - 实参添加或删除顶层 const
+2. 通过 const 转换实现的匹配
+3. 通过类型提升实现的匹配
+4. 通过算术类型转换或指针转换实现的匹配
+5. 通过类类型转换实现的匹配
+
+```cpp
+void func(int);
+void func2(double);
+void func3(int*);
+void func4(const int);
+void func5(const int*)
+void func6(Car);
+
+func(42); // 1 类型完全相同
+int arr[] = {0,1,2};
+func3(arr); // 1 实参从数组转换成指针
+func4(42); // 1 添加顶层const
+int i = 42;
+func5(&i); // 2 通过const转换实现的匹配
+short s = 42;
+func(s); // 3 通过类型提升实现的匹配
+func2(42); // 4 通过算术类型转换实现的匹配
+```
+
+## 函数指针
+
+```cpp
+bool lengthCompare(const string&, const string&); // lengthCompare是函数类型
+bool (*pf)(const string&, const string&);  // pf是函数指针类型
+pf = lengthCompare; // 函数类型自动转换成函数指针类型
+pf = &lengthCompare; // 与前面是等价的
+pf = nullptr; // pf可以指向空
+```
+
+区分：
+
+```cpp
+bool (*pf)(const string&, const string&); // pf是一个函数指针
+bool *pf(const string&, const string&); // pf是一个函数，返回值是bool*
+```
+
+重载函数的指针，要求必须精确的匹配参数和返回类型：
+
+```cpp
+void ff(int*);
+void (*pf1)(int) = ff; // 错误，参数不匹配
+double (*pf2)(int*) = ff; // 错误，返回类型不匹配
+```
+
+函数类型不能作为形参和返回值：
+
+```cpp
+void useBigger(const string& s1, const string& s2, bool pf(const string&, const string&)); // 自动转换成函数指针
+void useBigger(const string& s1, const string& s2, bool (*pf)(const string&, const string&)); // 显示指定函数指针
+useBigger(s1, s2, lengthCompare); // lengthCompare自动转换成函数指针
+```
+
+函数指针作为返回值的写法很复杂，推荐使用类型别名、尾置返回类型或 decltype：
+
+```cpp
+int (*f1(int))(int*, int); // f1是一个函数，返回值是函数指针
+auto f1(int) -> int(*)(int*, int); // 使用尾置返回类型
+
+typedef decltype(f1) ff1; // 定义函数类型
+typedef decltype(f1) *ff2; // 定义函数指针类型
+
+using F = int(int*, int); // F是函数类型
+using PF = int(*)(int*, int); // PF是函数指针类型
+typedef int F(int*, int); // F是函数类型
+typedef int (*PF)(int*, int); // PF是函数指针类型
+
+PF f1(int); // f1是一个函数，返回值是函数指针
+F f1(int); // 错误，返回值是函数类型
+F *f1(int); // 正确，返回值是函数指针类型
+```
