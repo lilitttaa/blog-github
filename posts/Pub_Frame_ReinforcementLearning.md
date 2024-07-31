@@ -1,6 +1,5 @@
 ---
 title: The Roadmap of Reinforcement Learning
-cover: robot.png
 ---
 
 ## Academic Conference
@@ -37,8 +36,8 @@ cover: robot.png
 
 ## Books
 
+- [蘑菇书EasyRL](https://datawhalechina.github.io/easy-rl/#/)
 - [Reinforcement Learning An Introduction](http://incompleteideas.net/book/RLbook2020.pdf)
-- [Easy RL：强化学习教程](https://book.douban.com/subject/35781275/)
 
 ## Competition
 

@@ -218,7 +218,7 @@ print(j); // 正确
 C++ 中没有真正的多维数组，多维数组是数组的数组。因此同样的，多维数组的形参本质上是指向数组的指针。
 
 ```cpp
-void print(int (*matrix)[10], size_t rowSize){
+void print(int (*matrix)[10], size_t rowSize){ // 必须指定除第一维外的所有维度
 	for(size_t i = 0; i < rowSize; ++i){
 		for(size_t j = 0; j < 10; ++j){
 			cout << matrix[i][j] << endl;
@@ -233,3 +233,329 @@ void print(int (*matrix)[10], size_t rowSize){
 int* matrix[10]; // 指针数组，每个元素都是指针
 int (*matrix)[10]; // 指向数组的指针
 ```
+
+### main 函数
+
+```cpp
+int main(int argc, char* argv[]){...}
+int main(int argc, char** argv){...} // 因为数组会被转换成指针，所以这两种写法是等价的
+```
+
+- argc 是命令行参数的数量（不包括 argv[0]）
+- argv 是一个指针数组，每个元素都是一个指向 C 风格字符串的指针，其中 argv[0] 是程序名
+
+### 含有可变形参的函数
+
+```cpp
+#include <iostream>
+#include <initializer_list>
+using namespace std;
+int sum(initializer_list<int> il)
+{
+	int sum = 0;
+	for(auto i : il){
+		sum += i;
+	}
+	return sum;
+}
+int main()
+{
+	cout << sum({1,2,3,4,5}) << endl;
+	initializer_list<int> il = {1,2,3,4,5};
+	initial_list<int> il2 = il; // 拷贝，与il共享底层数据
+	unsigned size = il.size();
+	auto begin = il.begin();
+	auto end = il.end();
+
+	for(auto b = li.begin();b!=li.end();++b){
+        cout<<*b<<endl; // 1 2 3 4 5
+        cout<<b[0]<<endl; // 1 2 3 4 5
+		*b = 1; // 错误，initializer_list中的元素都是常量
+    }
+}
+```
+
+省略符形参：
+
+```cpp
+void foo(parm_list, ...);
+```
+
+省略符形参是为了便于 C++程序访问某些特殊的 C 代码而设置的,这些代码使用了名为 varargs 的 C 标准库功能。通常，省略符形参不应用于其他目的。
+
+## 返回类型和 return 语句
+
+无返回值的函数：
+
+```cpp
+void func(){
+	return;
+}
+void func2(){
+	return func();
+}
+```
+
+- return 语句返回值的类型必须与函数的返回类型相同，或者能隐式地转换成函数的返回类型。
+- 返回一个值的方式和初始化一个变量或形参的方式完全一样：返回值用于初始化调用点的一个临时变量，该临时变量就是函数调用的结果。
+
+不要返回局部对象的引用或指针：
+
+```cpp
+const string& manip(){
+	string ret;
+	if(!ret.empty()){
+		return ret; // 错误，ret是局部对象
+	}else{
+		return "empty"; // 错误，返回的是局部对象
+	}
+}
+
+string* manip(){
+	string ret;
+	if(!ret.empty()){
+		return &ret; // 错误，ret是局部对象
+	}else{
+		return new string("empty"); // 正确，返回的是动态分配的对象，但是这种写法有内存泄漏的风险
+	}
+}
+```
+
+调用本身也是一种运算符，它的优先级和结合律和. ->一样：
+
+```cpp
+auto sz = shorterString(s1, s2).size();
+```
+
+当返回值是引用时，这时候拿到的是左值，因此可以对返回值进行赋值：
+
+```cpp
+char& getVal(string& str, string::size_type ix){
+	return str[ix];
+}
+getVal(s, 0) = 'A';
+```
+
+C++11 之后可以使用 initiallizer_list 来初始化返回的临时量：
+
+```cpp
+vector<string> process()
+{
+	if(expected.empty())
+		return {}; // 返回一个空的vector
+	else if(expected.size() == 1)
+		return {"only"}; // 返回一个只有一个元素的vector
+	else
+		return {"the","other","case"}; // 返回一个有三个元素的vector
+}
+
+int func(){
+	return {1};
+	// return {1,2,3}; // 错误，内置类型只有一个元素
+	return {}; // 正确，执行值初始化
+}
+// 类类型由类自己决定如何初始化
+```
+
+main 函数返回值，如果没有 return，编译器会隐式添加 return 0; 0 表示程序正常退出，非 0 表示异常退出。
+
+```cpp
+int main()
+{
+	if(fail)
+		return EXIT_FAILURE; // 定义在cstdlib中
+	else
+		return EXIT_SUCCESS; // 定义在cstdlib中
+}
+```
+
+### 返回数组指针
+
+返回数组的指针写法比较复杂：
+
+```cpp
+int (*func(int i))[10];
+```
+
+- func(int i) 表示 func 是一个函数，参数是 int
+- (\*func(int i)) 表示 func 的返回值可以被解引用
+- (\*func(int i))[10] 表示解引用得到一个指向大小为 10 的数组的指针
+- int (\*func(int i))[10] 表示这个数组的元素是 int 类型
+
+可以使用类型别名、尾置返回类型或 decltype 简化：
+
+```cpp
+typedef int arrT[10]; // using arrT = int[10];
+arrT* func(int i);
+
+auto func(int i) -> int(*)[10];
+
+int arr[10];
+decltype(arr)* func(int i){...}
+```
+
+## 函数重载
+
+```cpp
+void print(const char* p);
+void print(const int* p, size_t size);
+void print(const int* beg, const int* end);
+
+print("hello");
+const char* p = "hello";
+print(p, end(p) - begin(p));
+print(begin(arr), end(arr));
+```
+
+对于重载的函数来说，它们应该在形参数量或形参类型上有所不同，不能仅仅是返回类型不同。
+
+```cpp
+int sum(int a, int b);
+double sum(int a, int b); // 错误，只有返回类型不同
+```
+
+```cpp
+Record lookup(const Account& acct);
+Record lookup(const Accout&); // 错误，同一个函数
+
+typedef Phone Tel;
+Record lookup(const Phone&);
+Record lookup(const Tel&); // 错误，同样的类型
+```
+
+顶层 const 不影响传参，因此不能通过顶层 const 来区分重载函数：
+
+```cpp
+void f(int);
+void f(const int); // 顶层const，不能区分
+void f(int*);
+void f(int* const); // 顶层const，不能区分
+void f(int*);
+void f(const int*); // 底层const，可以区分
+void f(int&);
+void f(const int&); // 底层const，可以区分
+```
+
+当我们传递一个非常量对象或者指向非常量对象的指针时，编译器会优先选用非常量版本的函数。
+
+### 重载函数匹配
+
+函数匹配：编译器首先将调用的实参与重载集合中每一个函数的形参进行比较，然后根据比较的结果决定到底调用哪个函数。
+函数匹配会有三种结果：
+
+- 找到最佳匹配
+- 找不到匹配，发出无匹配的错误
+- 有多个函数都可以匹配，但是没有一个是明显的最佳匹配，发出二义性调用的错误
+
+### 重载与作用域
+
+- 一旦在当前作用域中找到了所需的名字，编译器就会忽略掉外层作用域中的同名实体。
+- 在 C++ 语言中，名字查找发生在类型检查之前。
+
+```cpp
+void print(const char* str){
+    cout<<str<<endl;
+}
+void print(int n){
+    cout<<n<<endl;
+}
+void print(double d){
+    cout<<d<<endl;
+}
+int main()
+{
+    void print(int); // 内层作用域的声明会隐藏外层作用域的同名实体
+    // print("Hello"); // 错误，找不到匹配的函数
+    print(3.14); // 3
+    print(1); // 1
+}
+```
+
+## 特殊用途语言特性
+
+### 默认实参
+
+- 默认实参默认值放在函数声明中，而不是函数定义中。
+- 默认实参只能出现在形参列表的尾部，不能在中间某个位置省略。
+- 默认实参可以分在多个声明中，但是不能重复。
+
+```cpp
+void foo(int a, int b, int c = 1);
+void foo(int a, int b, int c = 2); //错误，重复声明
+void foo(int a=1, int b=1, int c); // 正确
+```
+
+除了局部变量不能作为默认实参外，其他只要类型匹配都可以：
+
+```cpp
+void print(int n){
+    cout<<n<<endl;
+}
+int j = 2;
+int main()
+{
+    void print(int n = j);
+    int i =1;
+    void print(int n = i); // 错误，局部变量不能作为默认实参
+    print();
+}
+```
+
+用作默认实参的名字在函数声明所在的作用域内解析，而这些名字的求值过程发生在函数调用时：
+
+```cpp
+size_t wd = 80;
+char def = ' ';
+size_t ht();
+string screen(size_t = ht(), size_t = wd, char = def);
+
+string window = screen();  // call screen(ht(), 80, ' ')
+
+void f2() {
+    def = '*',
+    size_t wd = 100;
+    window = screen();  // call screen(ht(), 80, '*')
+}
+```
+
+### 内联函数和 constexpr 函数
+
+内联函数：
+
+- 优化规模较小、流程直接、频繁调用的函数
+- 内联说明只是向编译器发出的一个请求，编译器可以选择忽略这个请求。
+
+内联函数会被编译器在每个调用点展开：
+
+```cpp
+inline const string& shorterString(const string& s1, const string& s2)
+{
+	return s1.size() <= s2.size() ? s1 : s2;
+}
+
+cout << shorterString(s1, s2) << endl;
+// =>
+cout << (s1.size() <= s2.size() ? s1 : s2) << endl;
+```
+
+constexpr 函数：
+
+- 指能用于常量表达式的函数。
+- constexpr 函数不一定返回常量表达式。
+- 函数返回值及其形参都是字面值类型
+- 有且只有一条 return 语句
+- 编译器隐式的将 constexpr 函数内联
+
+```cpp
+constexpr int new_sz(){return 42;}
+constexpr int foo = new_sz(); // 正确，返回值是常量表达式
+
+constexpr size_t scale(size_t cnt){return new_sz()*cnt;}
+int arr[scale(2)]; // 正确，返回值是常量表达式
+int i = 2;
+int arr2[scale(i)]; // 错误，返回值不是常量表达式
+```
+
+内联函数和 constexpr 函数定义需要放在头文件中。
+
+### 调试帮助
