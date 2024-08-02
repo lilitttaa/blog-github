@@ -198,6 +198,10 @@ $detA^T = detA$
 如果 A 是 invertible（可逆的）：$detA^{-1} = (detA)^{-1}$
 如果 U 是 orthogonal（正交的）：$detU = \pm 1$
 
+正交矩阵的行列式：
+$detU = \pm 1$
+如果正交矩阵的列向量构成右手坐标系，则 $detU = 1$，否则 $detU = -1$
+
 ### Eigenvalues and Eigenvectors（特征值和特征向量）
 
 For a matrix 𝐴, if a **nonzero** vector $\vec{x}$ satisfies:
@@ -222,3 +226,45 @@ $\vec{a^{'}} = \begin{bmatrix} s_xa_x & s_ya_y & s_za_z \end{bmatrix}^T = \begin
 ### Translation
 
 ![alt text](image-19.png)
+$\vec{a^{'}} = \vec{a} + \vec{t}$
+
+Combination of Translations:
+![alt text](image-20.png)
+$\vec{t} = \vec{t^{'}} + \vec{t^{''}}$
+
+### Rotation
+
+![alt text](image-21.png)
+$\vec{a^{'}} = R\vec{a}$
+
+- Rotation matrix is orthogonal: $R^{-1} = R^T$, $R^TR = RR^T = I$
+- Determinant of R: $detR = +1$
+- Rotation maintains length of vectors: $||R\vec{a}|| = ||\vec{a}||$
+
+Combination of Rotations:
+![alt text](image-22.png)
+$R_2(R_1\vec{a}) = R_2R_1\vec{a} = R\vec{a}$
+
+Rotation around coordinate axes:
+![alt text](image-23.png)
+$R_x(\alpha) = \begin{bmatrix} 1 & 0 & 0 \\ 0 & \cos\alpha & -\sin\alpha \\ 0 & \sin\alpha & \cos\alpha \end{bmatrix}$
+$R_y(\beta) = \begin{bmatrix} \cos\beta & 0 & \sin\beta \\ 0 & 1 & 0 \\ -\sin\beta & 0 & \cos\beta \end{bmatrix}$
+$R_z(\gamma) = \begin{bmatrix} \cos\gamma & -\sin\gamma & 0 \\ \sin\gamma & \cos\gamma & 0 \\ 0 & 0 & 1 \end{bmatrix}$
+
+绕 xyz 旋转等价于绕某一轴旋转：
+![alt text](image-24.png)
+
+Rotation Axis and Angle
+已知旋转矩阵 R 特征值为+1：
+$R\vec{u} = \vec{u}$
+意味着 $\vec{u}$ 是旋转中的不变量，因此 R 可以考虑为绕 $\vec{u}$ 轴旋转旋转角度为 $\theta$的矩阵。
+
+所以下面的问题是如何找到 $\vec{u}$ 和 $\theta$？
+$R\vec{u} = \vec{u} \Rightarrow \vec{u} = R^T\vec{u}$
+$\Rightarrow(R-R^T)\vec{u}=0$
+$\Rightarrow\begin{bmatrix} 0 & -(r_{21}-r_{12}) & r_{13}-r_{31} \\ r_{21}-r_{12} & 0 & -(r_{32}-r_{23}) \\ -(r_{13}-r_{31}) & r_{32}-r_{23} & 0 \end{bmatrix}\vec{u}= \vec{0}$
+该矩阵为skew-symmetric matrix，因此可以表示为叉乘的形式：
+$\vec{u'} \times \vec{u} = \vec{0}$
+对照叉乘到反对称矩阵的关系，可以得到：
+$u'_x = r_{32}-r_{23}, u'_y = r_{13}-r_{31}, u'_z = r_{21}-r_{12}$
+所以$\vec{u'} = \begin{bmatrix} r_{32}-r_{23} \\ r_{13}-r_{31} \\ r_{21}-r_{12} \end{bmatrix}$
