@@ -148,8 +148,345 @@ public:
 
 ## 类的其他特性
 
+### 类成员再探
+
+类内类型别名：
+
+- 类内类型别名受到访问控制的限制
+- 与成员变量不同，必须先定义在使用
+
+```cpp
+class A{
+public:
+	using size_type = std::string::size_type;
+	// typedef std::string::size_type size_type; // 与上面等价
+	size_type size() const;
+}
+```
+
+- 定义在类内部的成员函数是自动 inline 的
+- 在声明和定义的地方同时说明 inline 是合法的。不过，最好只在类外部定义说明 inline，这样可以使类更容易理解
+- 和我们在头文件中定义 inline 函数的原因一样，inline 成员函数也应该与相应的类定义在同一个头文件中。
+
+```cpp
+class A{
+public:
+	void print() const;
+	void add(int a) { b += a; } // 隐式内联
+}
+inline void A::print() const {
+	std::cout << "Hello, world!" << std::endl;
+}
+```
+
+mutable 永远是可修改的，即便是：
+
+- 是在 const 成员函数中
+- 在 const 对象中
+
+```cpp
+class Screen {
+public:
+	void some_member() const;
+private:
+	mutable size_t access_ctr;
+}
+void Screen::some_member() const {
+	++access_ctr;
+}
+
+const Screen myScreen;
+myScreen.some_member();
+```
+
+c++11 中，如果类的数据成员如果总是需要有一个默认值，最好是使用类内初始值：
+
+```cpp
+class A{
+	int a = 0;
+	int b{0}; // 与上面等价
+	int c(0); // 错误，只能使用 = 或者 {}
+};
+```
+
+### 返回 \*this 的成员函数
+
+```cpp
+class Screen {
+public:
+	Screen& set(char c) {
+		contents[cursor] = c;
+		return *this;
+	}
+	Screen& move(std::size_t r, std::size_t c) {
+		cursor = r * width + c;
+		return *this;
+	}
+private:
+	std::string contents;
+	std::string::size_type cursor;
+	std::string::size_type height, width;
+}
+Screen myScreen;
+myScreen.set('#').move(4, 0); // 链式调用
+```
+
+### 类类型
+
+- 即使两个类的成员列表完全一致,它们也是不同的类型。
+- 前向声明定义了一个不完全类型
+  - 可以定义指向这种类型的指针或引用
+  - 可以声明（但不能定义）以不完全类型作为参数或返回类型的函数
+
+### 友元再探
+
+- 友元不具有传递性
+- 重载函数每个都是单独的函数，需要分别声明为友元
+- 友元函数可以定义在类内部
+- 声明类的成员函数作为友元比较麻烦，只能按照下面的顺序写：
+
+  ```cpp
+  class Window_mgr {
+  public:
+  	void clear(ScreenIndex); // 需要先声明，这样友元才能声明
+  	...
+  }
+  class Screen {
+  	friend void Window_mgr::clear(ScreenIndex); // 声明友元
+  	int width, height;
+  }
+
+  void Window_mgr::clear(ScreenIndex i) {
+  	Screen &s = screens[i];
+  	s.contents = std::string(s.height * s.width, ' '); // 需要声明友元后才能访问私有成员
+  }
+  ```
+
 ## 类的作用域
+
+类中定义的类型，在外部需要加上作用域访问符：
+
+```cpp
+class A{
+public:
+	typedef double money;
+	money add(money a, money b);
+};
+A::money A::add(money a, money b) { // 参数和函数体都在类的作用域内，返回值在外边需要加上作用域访问符
+	money sum = a + b;
+	return sum;
+}
+int main() {
+    A a;
+    A::money b = 0.0; // 加上作用域访问符
+    A::money c = a.add(b,1.2);
+    std::cout<<c<<std::endl;
+}
+```
+
+名字查找：
+
+- 在名字当前块中寻找，只考虑名字使用之前的声明
+- 继续查找外层作用域
+- 找不到报错
+
+类的查找有点区别：
+
+- 编译器处理完类中的全部声明后才会处理成员函数的定义。
+- 如果成员使用了外层作用域中的某个名字，而该名字代表一种类型，则类不能在之后重新定义该名字:
+
+```cpp
+int a = 1;
+typedef double money;
+class A{
+public:
+    money a = 2.1;
+    void print(money m){
+        std::cout<<m<<std::endl;
+    }
+    typedef int money; // 错误，declaration of ‘typedef int A::money’ changes meaning of ‘money’ [-fpermissive]
+    void print2(money m){
+        std::cout<<m<<std::endl;
+    }
+};
+```
+
+类内定义的作用域名字查找：
+
+- 在成员函数中使用前的声明
+- 在类内部查找
+- 在外部查找
+- 如果定义在外边，在外部查找以函数体前面的声明为准
+
+```cpp
+class Screen{
+public:
+	typedef std::string::size_type pos;
+	pos height;
+	void setHeight(pos p);
+};
+int height;
+void Screen::setHeight(pos p) {
+	height = p;
+}
+```
 
 ## 构造函数再探
 
+### 构造函数初始值列表
+
+- 初始化成员的顺序与它们在类中定义的顺序一致
+- 如果是 const、引用、没有默认构造函数的类类型，必须使用初始化列表或者类内初始化，而不是赋值
+
+```cpp
+class Sales_data {
+private:
+	unsigned units_sold = 0;
+	std::string bookNo;
+	double revenue = 0.0; // 初始化顺序为units_sold, bookNo, revenue
+public:
+	Sales_data(const std::string &s, unsigned n, double p) : bookNo(s), units_sold(n) { // 初始化
+			revenue = p * n; // 赋值，revenue会在执行函数体之前被默认初始化
+	 }
+};
+```
+
+### 委托构造函数
+
+```cpp
+class Sales_data {
+public:
+	Sales_data(std::string s, unsigned cnt, double price) : bookNo(s), units_sold(cnt), revenue(cnt * price) { } // 执行委托构造后，再执行函数体
+	Sales_data() : Sales_data("", 0, 0) { }
+	Sales_data(std::string s) : Sales_data(s, 0, 0) { }
+	Sales_data(std::istream &is) : Sales_data() { read(is, *this); } // 支持嵌套
+};
+```
+
+### 默认构造函数的作用
+
+### 隐式的类类型转换
+
+### 聚合类
+
+聚合类满足以下条件：
+
+- 所有成员都是 public
+- 没有定义任何构造函数
+- 没有类内初始值
+- 没有基类，没有 virtual 函数
+
+```cpp
+struct Data {
+	int ival;
+	std::string s;
+	float fval;
+}
+
+Data val1 = {0, "Anna"}; // 聚合类可以使用花括号列表初始化，fval执行值初始化
+```
+
+### 字面值常量类
+
+constexpr 函数的返回值和形参必须是字面值类型，类也可以是字面值类型，要求：
+
+- 数据成员都是字面值类型
+- 类必须至少含有一个 constexpr 构造函数
+- 如果一个成员变量有初始值，则初始值必须是常量表达式，如果是类，则必须调用 constexpr 构造函数
+- 必须使用默认的析构函数
+
+```cpp
+class Debug {
+public:
+	constexpr Debug(bool b = true) : hw(b), io(b), other(b) { } // constexpr 构造函数一般函数体是空的
+	constexpr Debug(bool h, bool i, bool o) : hw(h), io(i), other(o) { }
+	constexpr bool any() { return hw || io || other; }
+	void set_io(bool b) { io = b; }
+	void set_hw(bool b) { hw = b; }
+	void set_other(bool b) { other = b; }
+private:
+	bool hw;
+	bool io;
+	bool other;
+}
+
+constexpr Debug io_sub(false, true, false);
+if (io_sub.any()) { ... }
+```
+
 ## 类的静态成员
+
+- 静态成员可以是 public 的或 private 的
+- 静态成员函数不包含 this 指针。因此不能声明成 const 的，也不能在 static 函数体内使用 this 指针
+- 要想确保对象只定义一次，最好的办法是把静态数据成员的定义与其他非内联函数的定义放在同一个文件中
+
+访问方式：
+
+```cpp
+class A {
+public:
+    static int a;
+    static void print();
+    void printObj() { A::print(); } // 成员函数调用静态成员函数
+};
+int A::a = 0; // static关键词只出现类内部的声明中，类外部必须做初始化
+void A::print() { std::cout << a << std::endl; }
+
+int main() {
+    A::a = 2;
+    A::print();  // 通过类名调用静态成员函数
+    A a;
+    a.print(); // 通过对象调用静态成员函数
+    a.printObj();
+    return 0;
+}
+```
+
+有特殊情况，静态成员变量可以进行类内初始化：
+
+- 字面值常量类型的 constexpr
+- 初始值必须是常量表达式
+
+```cpp
+class A {
+public:
+	static constexpr int a = 30; // 仅用于编译器可以替换的值，外部可以不用定义了
+	double data[a];
+};
+constexpr int A::a; //但如果外面还有其他使用，则需要定义
+void print(const int& a) {
+	std::cout<<a<<std::endl;
+}
+int main() {
+    print(A::a);
+    return 0;
+}
+```
+
+特殊性：
+
+- 静态成员变量可以使用不完全类型
+- 静态成员变量可以作为默认值
+
+```cpp
+
+class B;
+class A {
+public:
+	static B sb; // 使用不完全类型
+	static A sa;
+	int n = 1;
+	void print(A a = sa){ // 作为默认值
+		std::cout<<a.n<<std::endl;
+	}
+};
+class B{};
+
+B A::sb;
+A A::sa;
+
+int main() {
+    A a;
+    a.print();
+}
+```
