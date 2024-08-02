@@ -365,7 +365,91 @@ public:
 
 ### 默认构造函数的作用
 
+对象被默认初始化或者值初始化时，会调用默认构造函数（包括构造函数所有参数都有默认值）。
+
+使用默认初始化的场景：
+
+- 非静态局部变量没有初始化
+- 类内的类类型成员使用合成默认构造函数初始化
+- 类类型的成员没有在构造函数初始值列表中显式地初始化时
+
+使用值初始化的场景：
+
+- 数组初始化时初始化值数量少于数组元素数量
+- 静态局部变量没有初始化
+- T()显示初始化，T 为类型，例如：vector<> v(10); // 10 个元素，值初始化
+
+```cpp
+class B{};
+class A{
+public:
+	A() = default;
+	A(int a) : a(a) {}
+	int a;
+	B b; // 使用合成默认构造函数初始化 默认初始化
+};
+
+
+void f() {
+	int a; // 默认初始化
+	static int b; // 值初始化
+	int arr[5] = {1, 2}; // {1, 2, 0, 0, 0} 值初始化
+	vector<int> v(10); // 10个元素，值初始化为0
+	vector<A> va(10); // 10个元素，值初始化为A的默认构造函数
+}
+```
+
+常见的错误：
+
+```cpp
+Sales_data item(); // 错误，声明了一个函数
+Sales_data item; // 正确，调用默认构造函数
+```
+
 ### 隐式的类类型转换
+
+- 如果构造函数只接受一个实参，则它实际上定义了转换为此类类型的隐式转换机制，有时我们把这种构造函数称作转换构造函数
+- 只允许一步类型转换
+
+```cpp
+class Sales_data {
+public:
+	Sales_data() = default;
+	Sales_data(const std::string &s) : bookNo(s) { }
+	Sales_data(const unsigned &n) : units_sold(n) { }
+	void Combine(const Sales_data &rhs) { units_sold += rhs.units_sold; revenue += rhs.revenue; }
+	unsigned units_sold = 0;
+	double revenue = 0.0;
+	std::string bookNo = "";
+}
+
+Sales_data item;
+item.Combine(10); // 隐式转换
+item.Combine("9-999-99999-9"); // 错误，两步转换
+item.Combine(string("9-999-99999-9")); // 正确
+```
+
+可以使用 explicit 关键字阻止隐式转换：
+
+- explicit 只对一个实参的构造函数有效
+- 使用 explict 后，只能进行直接初始化，不能进行拷贝初始化
+- explicit 放在类内声明处，不要放在类外定义处
+
+```cpp
+class Sales_data {
+public:
+	explicit Sales_data(const std::string &s) : bookNo(s) { }
+	explicit Sales_data(const unsigned &n) : units_sold(n) { }
+}
+Sales_data item;
+item.Combine(10); // 错误，不能隐式转换
+item.Combine(string("9-999-99999-9")); // 错误，不能隐式转换
+item.Combine(Sales_data(string("9-999-99999-9"))); // 正确
+
+string null_book = "9-999-99999-9";
+Sales_data item1(null_book); // 可以直接初始化
+Sales_data item2 = null_book; // 错误，不能拷贝初始化
+```
 
 ### 聚合类
 
