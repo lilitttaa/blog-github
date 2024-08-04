@@ -257,14 +257,15 @@ $R_z(\gamma) = \begin{bmatrix} \cos\gamma & -\sin\gamma & 0 \\ \sin\gamma & \cos
 Rotation Axis and Angle
 已知旋转矩阵 R 特征值为+1：
 $R\vec{u} = \vec{u}$
-意味着 $\vec{u}$ 是旋转中的不变量，因此 R 可以考虑为绕 $\vec{u}$ 轴旋转旋转角度为 $\theta$的矩阵。
+意味着 $\vec{u}$ 是旋转中的不变量，因此 R 可以考虑为绕 $\vec{u}$ 轴旋转角度为 $\theta$的矩阵。
 
 所以下面的问题是如何找到 $\vec{u}$ 和 $\theta$？
 $R\vec{u} = \vec{u} \Rightarrow \vec{u} = R^T\vec{u}$
 $\Rightarrow(R-R^T)\vec{u}=0$
 $\Rightarrow\begin{bmatrix} 0 & -(r_{21}-r_{12}) & r_{13}-r_{31} \\ r_{21}-r_{12} & 0 & -(r_{32}-r_{23}) \\ -(r_{13}-r_{31}) & r_{32}-r_{23} & 0 \end{bmatrix}\vec{u}= \vec{0}$
-该矩阵为skew-symmetric matrix，因此可以表示为叉乘的形式：
+该矩阵为 skew-symmetric matrix，因此可以表示为叉乘的形式：
 $\vec{u'} \times \vec{u} = \vec{0}$
 对照叉乘到反对称矩阵的关系，可以得到：
 $u'_x = r_{32}-r_{23}, u'_y = r_{13}-r_{31}, u'_z = r_{21}-r_{12}$
 所以$\vec{u'} = \begin{bmatrix} r_{32}-r_{23} \\ r_{13}-r_{31} \\ r_{21}-r_{12} \end{bmatrix}$
+另外根据叉乘为 0，可以得到：$\vec{u}$与$\vec{u'}$共线
