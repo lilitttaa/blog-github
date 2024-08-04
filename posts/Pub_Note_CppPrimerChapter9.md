@@ -443,7 +443,7 @@ auto pos = name.find_first_of(numbers); // pos = 1
 
 顺序容器适配器：
 | 名字 | 说明 | 头文件 |
-|----------------|------------------------------------------------------------------|--------|
+|----------------------|---------------------------------------------|----------------------|
 | stack | 默认容器为 deque，也可以用 list、vector 不支持 forward_list 和 array | stack |
 | queue | 默认容器为 deque，也可以用 list 不支持 vector、forward_list 和 array | queue |
 | priority_queue | 默认容器为 vector，也可以用 deque 不支持 list、forward_list 和 array | queue |
