@@ -268,4 +268,6 @@ $\vec{u'} \times \vec{u} = \vec{0}$
 对照叉乘到反对称矩阵的关系，可以得到：
 $u'_x = r_{32}-r_{23}, u'_y = r_{13}-r_{31}, u'_z = r_{21}-r_{12}$
 所以$\vec{u'} = \begin{bmatrix} r_{32}-r_{23} \\ r_{13}-r_{31} \\ r_{21}-r_{12} \end{bmatrix}$
-另外根据叉乘为 0，可以得到：$\vec{u}$与$\vec{u'}$共线
+另外根据叉乘为 0，可以得到：$\vec{u}$与$\vec{u'}$共线，或者$\vec{u'} = \vec{0}$
+什么时候$\vec{u'} = \vec{0}$呢？
+当 $R = R^T \Rightarrow sin\theta = 0$ $\Rightarrow \theta = 0$ or $\pi$
