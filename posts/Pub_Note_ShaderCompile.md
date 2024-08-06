@@ -4,7 +4,7 @@ title: Unreal Shader Compile
 
 ## Resources
 
-- [UE4 Shader编译以及变种实现](https://blog.csdn.net/UWA4D/article/details/107689394)
+- [UE4 Shader 编译以及变种实现](https://blog.csdn.net/UWA4D/article/details/107689394)
 - [UE 着色器开发文档](https://docs.unrealengine.com/4.27/zh-CN/ProgrammingAndScripting/Rendering/ShaderDevelopment/)
 - [交叉编译](https://docs.unrealengine.com/4.27/zh-CN/ProgrammingAndScripting/Rendering/ShaderDevelopment/HLSLCrossCompiler/)
 - [调试着色器编译过程](https://docs.unrealengine.com/4.27/zh-CN/ProgrammingAndScripting/Rendering/ShaderDevelopment/ShaderCompileProcess/)
@@ -138,10 +138,18 @@ Uber Shader：同一个 shader 源文件包含了大量的宏定义，这些宏�
 
 ![alt text](image-10.png)
 
+### global shader 编译报错
+
+```cpp
+FGlobalShaderTypeCompiler::FinishCompileShader(const FGlobalShaderType _, const FShaderCompileJob &, const FShaderPipelineType _) ShaderCompiler.cpp:5225
+[Inlined] ProcessCompiledJob(FShaderCompileJob _, const FShaderPipelineType _, TArray<…> &, TArray<…> &) ShaderCompiler.cpp:6030
+ProcessCompiledGlobalShaders(const TArray<…> &) ShaderCompiler.cpp:6077
+FShaderCompilingManager::ProcessCompiledShaderMaps(TMap<…> &, float) ShaderCompiler.cpp:3459
+FShaderCompilingManager::ProcessAsyncResults(bool, bool) ShaderCompiler.cpp:4000
+```
+
 ## Important Entities
 
 IShaderFormat 决定了使用哪个着色器格式，也决定了是否使用 hlslcc
 ![alt text](image.png)
 （其中 VectorVM 是 UE 中用于处理 Niagara 的后端格式）
-
-
