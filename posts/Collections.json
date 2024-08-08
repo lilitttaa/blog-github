@@ -50,7 +50,8 @@
       "Pub_Note_TDD",
       "Pub_nips_2023_poster_abstract",
       "Pub_Frame_ReinforcementLearning",
-      "Pub_Note_FoundationOfReinforcementLearning"
+      "Pub_Note_FoundationOfReinforcementLearning",
+      "Pub_Note_PythonRegex"
     ],
     "Cover": "program.png"
   },
