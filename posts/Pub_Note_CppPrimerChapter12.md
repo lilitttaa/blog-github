@@ -300,10 +300,189 @@ void f() {
 
 ### unique_ptr
 
+- unique_ptr“拥有”它所指向的对象
+- 与 shared_ptr 不同，某个时刻刻只能有一个 unique_ptr 指向一个给定对象。
+- 当 unique_ptr 被销毁时，它所指向的对象也被销毁。
+
+unique_ptr 同样支持 shared_ptr 中的部分操作：
+![Alt text](image.png)
+
+```cpp
+unique_ptr<double> p1;
+unique_ptr<double> p2(new double(3.14));
+unique_ptr<double> p3(p2); // 错误，unique_ptr 不支持拷贝
+unique_ptr<double> p4 = p2; // 错误，unique_ptr 不支持拷贝
+p4 = p2; // 错误，unique_ptr 不支持赋值
+swap(p2, p3); // 交换两个unique_ptr
+```
+
+- release 函数放弃对内存的控制权，返回指针
+- 注意内存还没有被释放
+
+```cpp
+unique_ptr<double> p1(new double(3.14));
+unique_ptr<double> p2(p1.release()); // p2 接管 p1 的内存
+double *x = p2.release(); // 内存还没有被释放
+delete x; // 手动释放内存
+
+unique_ptr<double> p3(new double(3.14));
+unique_ptr<double> p4(new double(3.14));
+p3.reset(p4.release()); // p3 原本的内存被释放，然后 p3 接管 p4 的内存
+```
+
+不过，unique_ptr 支持移动拷贝，仅用于临时对象：
+
+```cpp
+unique_ptr<int> clone(int p) {
+	return unique_ptr<int> ret(new int(p)); // 编译器知道要返回的对象要被销毁
+}
+
+unique_ptr<int> clone(int p) {
+	unique_ptr<int> ret(new int(p));
+	return ret; // 编译器知道要返回的对象要被销毁
+}
+```
+
+### 释放其他类型资源
+
+借助 shared_ptr 和 unique_ptr，还可以用来保证释放其他类型的资源，例如：网络连接
+
+```cpp
+struct destination; // 表明我们这在连接什么
+struct connection; // 连接所需的信息
+connection connect(destination*); // 打开连接
+void disconnect(connection); // 关闭连接
+void end_connection(connection *p) { disconnect(*p); } // 删除器
+void f(destination &d) {
+	connection c = connect(&d);
+	shared_ptr<connection> p(&c, end_connection); // 指定删除器
+	// 使用连接
+}
+```
+
+unique_ptr 写法稍微有点不一样，需要手动指定类型：
+
+```cpp
+void f(destination &d) {
+	connection c = connect(&d);
+	unique_ptr<connection, decltype(end_connection)*> p(&c, end_connection); // 必须添加*表明这是函数指针类型
+	// 使用连接
+}
+```
+
 ### weak_ptr
+
+- weak_ptr 是一种不控制所指向对象生存期的智能指针
+- 它指向 shared_ptr 管理的对象
+- 将 weak_ptr 绑定到一个 shared_ptr 不会改变其引用计数
+  | 方法 | 说明 |
+  | --- | --- |
+  | weak_ptr<T> w | w 是一个空 weak_ptr |
+  | weak_ptr<T> w(p) | w 是 p 的 weak_ptr |
+  | w = p | w 是 p 的 weak_ptr |
+  | w.reset() | 释放 w 指向的对象 |
+  | w.use_count() | 返回与 w 共享对象的 shared_ptr 数量 |
+  | w.expired() | 如果 w.use_count() 为 0，返回 true，否则返回 false |
+  | w.lock() | 如果 w.expired() 为 true，返回一个空 shared_ptr，否则返回一个指向 w 的对象的 shared_ptr |
+
+```cpp
+shared_ptr<int> p = make_shared<int>(42);
+weak_ptr<int> wp(p); // wp 弱引用 p
+
+if (shared_ptr<int> np = wp.lock()) { // 如果 np 不为空
+	// 在 if 语句块内，np 与 p 共享对象
+	cout << *np << endl; // 42
+}
+
+```
 
 ## 动态数组
 
+- C++定义了另一种 new 表达式语法，可以分配并初始化个对象数组。
+- 标准库中包含一个名为 allocator 的类，允许我们将分配和初始化分离。使用 allocator 通常会提供更好的性能和更灵活的内存管理能力。
+- 通常应该使用标准库容器而不是动态分配的数组。使用容器更为简单、更不容易出现内存管理错误并且可能有更好的性能。
+
 ### new 和数组
 
+- 动态数组不是数组，看上去分配数组但实际返回的类型是指针
+- 因此也不能进行数组操作，例如：begin 和 end
+- 不能用 auto 分配数组
+
+```cpp
+int *p1 = new int[get_size()]; // 分配的数目是整数，可以不是常量
+
+typedef int arrT[42]; // 使用类型别名
+int *p2 = new arrT; // 分配 42 个整数的数组
+
+int *p3 = new int[10](); // 值初始化，10 个 0
+int *p4 = new int[10]; // 默认初始化，10 个未定义的值
+string *p5 = new string[10]; // 默认初始化，10 个空字符串
+string *p6 = new string[10](); // 值初始化，10 个空字符串
+
+int *p = new int[3]{0, 1, 2}; // 列表初始化
+int *p = new int[3]{0, 1}; // {0, 1, 0}
+int *p = new int[3]{0, 1, 2, 3} // bad_array_new_length异常，定义在头文件 new 中
+
+char arr[0]; //错误，数组长度不能为 0
+char *cp = new char[0]; // 正确，但不能解引用
+```
+
+释放动态数组：
+
+- 数组中的元素按逆序销毁
+- 释放一个指向数组的指针时，空方括号对是必需的，如果不加方括号，其行为是未定义的
+
+```cpp
+int *p = new int[42];
+delete[] p; // 释放动态数组
+```
+
+智能指针和动态数组：
+
+```cpp
+// unique_ptr
+unique_ptr<int[]> up(new int[10]); // unique_ptr支持动态数组，析构时，会自动调用 delete[]
+up[0] = 1; // 使用和普通指针一样
+
+// shared_ptr
+shared_ptr<int> sp(new int[10], [](int *p) { delete[] p; }); // shared_ptr 不支持动态数组，需要自定义删除器
+for (size_t i = 0; i != 10; ++i) {
+	*(sp.get() + i) = i; // 不支持下标运算，需要使用 get
+}
+```
+
 ### allocator 类
+
+- new 和 delete 把分配/释放内存和构造/析构对象混在一起
+- 在需要分配多个对象的情况下，默认的构造是多余的，我们希望把这两个操作分开
+
+```cpp
+allocator<string> alloc; // 可以分配 string 的 allocator
+auto const p = alloc.allocate(n); // 分配 n 个未初始化的 string
+
+auto q = p; // q 指向最后构造的元素之后的位置
+alloc.construct(q++); // 在q的位置构造一个空字符串
+alloc.construct(q++, 3, 'c'); // 在q的位置构造一个ccc
+
+while (q != p) {
+	alloc.destroy(--q); // q为尾后指针，逆序销毁
+}
+
+alloc.deallocate(p, n); // 释放内存
+```
+
+除此之外，标准库还定义了一些拷贝和填充内存的函数：
+
+| 方法                           | 说明                                                                                                    |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------- |
+| uninitialized_copy(b, e, b2)   | 将迭代器范围 b 到 e 的元素拷贝到 b2 开始的未构造的内存，返回 copy 后的尾后指针，b2 必须指向足够大的空间 |
+| uninitialized_copy_n(b, n, b2) | 将迭代器 b 开始的 n 个元素拷贝到 b2 开始的未构造的内存，返回 copy 后的尾后指针，b2 必须指向足够大的空间 |
+| uninitialized_fill(b, e, t)    | 将迭代器范围 b 到 e 的元素填充为 t，返回填充后的尾后指针，b 必须指向足够大的空间                        |
+| uninitialized_fill_n(b, n, t)  | 将迭代器 b 开始的 n 个元素填充为 t，返回填充后的尾后指针，b 必须指向足够大的空间                        |
+
+```cpp
+vector<int> v = {1, 2, 3, 4, 5};
+auto p = alloc.allocate(v.size() * 2);
+auto q = uninitialized_copy(v.begin(), v.end(), p); // 拷贝v到p
+uninitialized_fill_n(q, v.size(), 42); // 填充后半部分为42
+```
