@@ -6,7 +6,8 @@ title: How To Read Unreal Code
 
 ## 通过编辑器提示、文本、或者打印信息进行搜索
 
-## 阅读相关模块的文档
+![alt text](image-2.png)
+![alt text](image-3.png)
 
 ## 相关 Commandlet
 
@@ -20,6 +21,37 @@ BlueprintFunctionLibrary 是暴露给蓝图的一些函数库，从这里入手�
 更多的 BlueprintFunctionLibrary 可以参考附录
 
 ## 通过蓝图搜索
+
+![alt text](image-4.png)
+![alt text](image-6.png)
+不过蓝图中的有些节点不是直接通过函数来定义的：
+![alt text](image-7.png)
+![alt text](image-5.png)
+这里描述了这个节点实际执行相关的函数和类：
+![alt text](image-8.png)
+不管怎么这些自定义的蓝图节点都继承自 UK2Node：
+![alt text](image-9.png)
+其中异步节点继承自 UK2Node_BasicAsyncTask：
+![alt text](image-10.png)
+
+## 阅读相关模块的文档
+
+- [Unreal 文档](https://docs.unrealengine.com/4.27/en-US/index.html)
+
+## IDE 工具
+
+使用代码折叠快速浏览代码：
+![alt text](image-11.png)
+或者也可以使用 Structure 来查看代码结构：
+![alt text](image-14.png)
+使用 Bookmark 来标记代码：
+![alt text](image-12.png)
+查看类型继承关系：
+![alt text](image-13.png)
+查看函数调用关系：
+![alt text](image-17.png)
+![alt text](image-15.png)
+![alt text](image-16.png)
 
 ## BlueprintFunctionLibrary 附录
 

@@ -11,7 +11,8 @@
       "Pub_Note_ObjectLifeTime",
       "Pub_Note_UnrealKismet",
       "Pub_Note_IntroductionToCharacterAnimation",
-      "Pub_Note_MathBackground"
+      "Pub_Note_MathBackground",
+      "Pub_Note_HowToReadUnrealCode"
     ],
     "Cover": "game.png"
   },
