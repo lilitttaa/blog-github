@@ -348,7 +348,7 @@
   },
   "Pub_Note_Animation": {
     "title": "Animation",
-    "created_at": "2024-08-08T12:25:04.795Z"
+    "created_at": "2024-08-09T13:20:36.741Z"
   },
   "Pub_Frame_UnrealTest": {
     "title": "Unreal 自动化测试源码分析",
@@ -361,7 +361,7 @@
   },
   "Pub_Note_GameProfile": {
     "title": "游戏性能优化",
-    "created_at": "2024-08-08T12:25:04.861Z"
+    "created_at": "2024-08-09T13:20:36.712Z"
   },
   "Pub_Note_UbisoftNarrative": {
     "title": "Procedural Generation of Cinematic Dialogues in Assassin's Creed Odyssey",
@@ -379,6 +379,10 @@
     "title": "A Top-Down Look at Our Bottom-Up Approach in 'Baldur's Gate 3'",
     "cover": "game.png",
     "created_at": "2024-06-14T13:50:18.402Z"
+  },
+  "Pub_Note_FF16": {
+    "title": "Cinematic Workflow and Pipeline of 'FINAL FANTASY XVI'",
+    "created_at": "2024-08-09T13:20:48.704Z"
   },
   "Pub_Note_OverviewOfGameEngine": {
     "title": "Overview Of Game Engine",
