@@ -274,8 +274,288 @@ protected:
 
 ## 访问控制与继承
 
+### 受保护的成员
+
+- 类使用 protected 关键字来声明那些它希望与派生类分享但是不想被其他公共访问使用的成员。
+- 和私有成员类似，受保护的成员对于类的用户来说是不可访问的。
+- 和公有成员类似，受保护的成员对于派生类的成员和友元来说是可访问的。
+- 派生类的成员或友元只能通过派生类对象来访问基类的受保护成员。派生类对于一个基类对象中的受保护成员没有任何访问特权。
+
+```cpp
+class Base
+{
+protected:
+	int prot_mem;
+};
+class Sneaky : public Base
+{
+	friend void clobber(Sneaky&);
+	friend void clobber(Base&);
+	int j;
+};
+void clobber(SneSneaky &s)
+{
+	s.j = s.prot_mem = 0; // 通过访问派生类对象来访问基类的受保护成员
+}
+void clobber(Base &b)
+{
+	b.prot_mem = 0; // 错误：不能直接访问基类的受保护成员
+}
+```
+
+### public、protected 和 private 继承
+
+- 继承而来的成员受两个因素影响：
+  - 基类中该成员的访问说明符
+  - 派生列表中该成员的访问说明符
+    - 不影响派生类自身对于基类成员的访问权限
+    - 影响派生类的派生类和派生类的用户的访问权限
+
+```cpp
+class Base
+{
+public:
+	void pub_mem();
+protected:
+	int prot_mem;
+private:
+	char priv_mem;
+};
+
+class Pub_Derv : public Base
+{
+	int f() { return prot_mem; } // 正确：可以访问 Base 的 protected 成员
+	char g() { return priv_mem; } // 错误：不能访问 Base 的 private 成员
+};
+
+class Priv_Derv : private Base // 基类的所有成员在派生类中都变成private了
+{
+	int f1() const { return prot_mem; } // 正确：private继承不影响访问基类的 protected 成员
+};
+
+class Prot_Derv : protected Base // 基类的所有成员在派生类中都变成protected了
+{
+	int f2() { return prot_mem; } // 正确：protected继承不影响访问基类的 protected 成员
+};
+
+Pub_Derv d1;
+Priv_Derv d2;
+Prot_Derv d3;
+d1.pub_mem(); // 正确
+d2.pub_mem(); // 错误：pub_mem是private的
+d3.pub_mem(); // 错误：pub_mem是protected的
+
+class Derived_from_Public : public Pub_Derv
+{
+	int use_base() { return prot_mem; } // 正确
+};
+
+class Derived_from_Private : public Priv_Derv
+{
+	int use_base() { return prot_mem; } // 错误：Priv_Derv 的所有成员在派生类中都是 private 的
+};
+
+class Derived_from_Protected : public Prot_Derv
+{
+	int use_base() { return prot_mem; } // 正确
+};
+```
+
+### 派生类向基类转换的可访问性
+
+派生类像基类转换的可访问性与成员的可访问性相似：
+
+- 友元的地位等价于类内部的地位
+- 不管是 public、protected 还是 private 继承，在派生类及其友元中都可以执行向基类的转换
+- 如果是 public 继承
+  - 都可以转换
+- 如果是 protected 继承
+  - 用户不能进行向基类的转换
+  - 派生类与友元及其后续的派生类中可以进行向基类的转换
+- 如果是 private 继承
+  - 除了派生类及其友元中，其他地方都不能进行向基类的转换
+- 一个简单的技巧：如果基类的 public 成员可以访问，那么向基类的转换也是可以访问的，反之，则不行
+
+```cpp
+class Base
+{
+public:
+	int val = 1;
+};
+class D1 : protected Base
+{
+public:
+	friend void func();
+};
+void func()
+{
+	D1 d1;
+	Base *pb = &d1; // 正确
+}
+int main()
+{
+	D1 d1;
+	Base *pb = &d1; // 错误，不能进行向基类的转换
+}
+```
+
+### 友元与继承
+
+- 友元不能传递也不能继承
+- 友元与声明类具有等价的访问权限
+- 友元能够访问 Base 对象的成员，这种可访问性包括了 Base 对象内嵌在其派生类对象中的情况
+
+```cpp
+class Base{
+public:
+	friend class Pal;
+	int pub_val = 1;
+protected:
+	int prot_val = 2;
+private:
+	int priv_val = 3;
+};
+
+class Derived : private Base{
+private:
+	int val = 4;
+};
+
+class Pal{
+public:
+	int f(Base b) { return b.priv_val; } // 正确：Pal 是 Base 的友元
+	int f(Derived d) { return d.val; } // 错误：Pal 不是 Derived 的友元
+	int f(Derived d) { return d.prot_val; } // 正确：访问内嵌在 Derived 中的 Base 对象的 protected 成员
+};
+```
+
+### 改变继承的可访问性
+
+- 使用 using 声明可以改变继承的可访问性
+- 改变后的可访问性来自于 using 语句当前所在的访问性级别
+- 派生类只能为那些它可以访问的名字提供 using 声明
+
+```cpp
+class Base
+{
+public:
+	int pub_mem;
+protected:
+	int prot_mem;
+private:
+	int priv_mem;
+};
+
+class D1 : private Base
+{
+private:
+	using Base::pub_mem; // 改变为 private
+	using Base::priv_mem; // 错误：访问不到priv_mem
+public:
+	using Base::prot_mem; // 改变为 public
+
+};
+```
+
+### 默认的继承保护级别
+
+- class 默认是 private 继承
+- struct 默认是 public 继承
+- private 派生的类最好显式地将 private 声明出来，而不要仅仅依赖于默认的设置
+
 ## 继承中的类作用域
+
+- 派生类的作用域嵌套在其基类的作用域之内。
+- 如果名字在派生类的作用域内无法正确解析，则编译器将继续在外层的基类寻找。
+- 对象、指针、引用的静态类型决定了哪些成员是可见的，即便动态类型和静态类型不一致。
+  ```cpp
+  class Base{
+  };
+  class D1 : public Base{
+  public:
+  void func(){};
+  };
+  D1 d1;
+  Base *pb = &d1;
+  pb->func(); // 错误：Base类型没有func成员
+  ```
+
+### 名字冲突与继承
+
+- 派生类的成员将隐藏同名的基类成员
+- 可以使用作用域运算符来访问被隐藏的名字
+- 除了覆盖虚函数外，派生类最好不要重用其他定义在基类中的名字
+- 名字查找先于类型检查：内层作用域的名字会隐藏外层作用域的名字，即使它们是不同参数的重载版本
+
+```cpp
+struct Base
+{
+public:
+	int memfcn();
+};
+struct Derived : Base
+{
+public:
+	int memfcn(int);
+};
+Derived d; Base b;
+b.memfcn(); // 正确：调用 Base::memfcn
+d.memfcn(); // 错误：没有与之匹配的函数
+d.memfcn(10); // 正确：调用 Derived::memfcn
+```
+
+函数调用中的解析过程（假设调用 p->mem()或 obj.mem()）：
+
+- 确定 p 或者 obj 的静态类型
+- 在该类型的作用域中查找 mem，找不到就沿着继承链向上查找
+- 找到后进行常规的类型检查（实参形参匹配等）
+- 如果调用合法，检查是否是虚函数：
+  - 指针和引用的虚函数调用：编译器生成代码，该代码在运行时选择正确的版本
+  - 对象或者非虚函数：编译器生成一份常规的函数调用代码
+
+### 虚函数与作用域
+
+- 如果基类与派生类的虚函数接受的实参不同，会导致派生类将基类虚函数隐藏，无法进行多态调用。
+
+```cpp
+class Base{
+public:
+	virtual int fcn();
+};
+class D1 : public Base{
+public:
+	int fcn(int); // 隐藏 Base::fcn
+	virtual void f2();
+};
+class D2 : public D1{
+public:
+	int fcn(int); // 非虚函数，隐藏 D1::fcn(int)
+	int fcn(); // 虚函数，覆盖 Base::fcn
+	void f2(); // 虚函数，覆盖 D1::f2
+};
+
+Base bobj; D1 d1obj; D2 d2obj;
+
+Base *bp1 = &bobj, *bp2 = &d1obj, *bp3 = &d2obj;
+bp1->fcn(); // 虚调用，Base::fcn
+bp2->fcn(); // 虚调用，Base::fcn
+bp3->fcn(); // 虚调用，D2::fcn
+
+D1 *d1p = &d1obj; D2 *d2p = &d2obj;
+bp2->f2(); // 错误：Base没有f2
+d1p->f2(); // 虚调用，D1::f2
+d2p->f2(); // 虚调用，D2::f2
+
+Base *p1 = &d2obj; D1 *p2 = &d2obj; D2 *p3 = &d2obj;
+p1->fcn(42); // 错误：Base没有接受int的fcn
+p2->fcn(42); // 静态绑定，D1::fcn(int)
+p3->fcn(42); // 静态绑定，D2::fcn(int)
+```
+### 覆盖重载的函数
+
+
 
 ## 构造函数与拷贝控制
 
 ## 容器与继承
+```
