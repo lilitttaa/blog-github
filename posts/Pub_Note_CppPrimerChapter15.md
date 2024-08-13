@@ -551,11 +551,110 @@ p1->fcn(42); // 错误：Base没有接受int的fcn
 p2->fcn(42); // 静态绑定，D1::fcn(int)
 p3->fcn(42); // 静态绑定，D2::fcn(int)
 ```
+
 ### 覆盖重载的函数
 
+- 派生类覆盖重载函数一般要么一个都不覆盖，要么都覆盖
+- 如果只覆盖其中一部分，剩下的重载函数将被隐藏，无法进行多态调用
 
+```cpp
+class Base{
+public:
+	virtual int fcn();
+	virtual int fcn(int);
+}；
+
+class Derived : public Base{
+public:
+	int fcn();
+}；
+
+Derived d;
+d.fcn(1); // fcn(int) 被隐藏
+```
 
 ## 构造函数与拷贝控制
 
+### 虚析构函数
+
+- 甚类通常应该定义一个虚析构函数
+- 如果基类的析构函数不是虚函数,则 delete 一个指向派生类对象的基类指针将产生未定义的行为。
+- 如果一个类定义了析构函数，即使它通过=default 的形式使用了合成的版本，编译器也不会为这个类合成移动操作。
+
+### 合成拷贝控制与继承
+
+- 派生类合成的函数成员负责使用**直接基类**中的对应操作对对象的直接基类部分进行初始化、赋值或销毁。
+- 派生类的析构函数来说，它除了销毁派生类自己的成员外,还负责销毁派生类的直接基类。
+
+```cpp
+class Base{
+public:
+	Base() = default;
+	Base(const Base&) = default;
+	Base& operator=(const Base&) = default;
+	~Base() = default;
+};
+class D1 : public Base{
+public:
+	D1() = default;
+	D1(const D1&) = default;
+	D1& operator=(const D1&) = default;
+	~D1(){
+		// ~Base() 会被自动调用
+	}
+};
+```
+
+派生类中删除的拷贝控制与基类的关系
+
+### 派生类的拷贝控制成员
+
+### 继承的构造函数
+
 ## 容器与继承
+
+- 当使用容器存放继承体系中的对象时，通常必须采取间接存储的方式。因为不允许在容器中保存不同类型的元素。
+
+```cpp
+vector <Quote> basket;
+basket.push_back(Quote("0-201-82470-1", 50));
+basket.push_back(Bulk_quote("0-201-54848-8", 50, 5, .19)); //Bulk_quote对象被切割
+```
+
+可以通过放置指针或者智能指针来解决这个问题：
+
+```cpp
+vector<shared_ptr<Quote>> basket;
+basket.push_back(make_shared<Quote>("0-201-82470-1", 50));
+basket.push_back(make_shared<Bulk_quote>("0-201-54848-8", 50, 5, .19));
+```
+
+不过这使得用户不得不面对智能指针，我们可以优化一下：
+
+```cpp
+class Quote{
+public:
+	virtual Quote* clone() const & { return new Quote(*this); }
+	virtual Quote* clone() && { return new Quote(std::move(*this)); }
+};
+
+class Bulk_quote : public Quote{
+public:
+	Bulk_quote* clone() const & { return new Bulk_quote(*this); }
+	Bulk_quote* clone() && { return new Bulk_quote(std::move(*this)); }
+};
+
+class Basket{
+public:
+	void add_item(const Quote &sale)
+	{
+		items.insert(shared_ptr<Quote>(sale.clone()));
+	}
+	void add_item(Quote &&sale)
+	{
+		items.insert(shared_ptr<Quote>(std::move(sale).clone()));
+	}
+private:
+	...
+};
 ```
