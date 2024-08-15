@@ -46,3 +46,23 @@ enum class ERDGPassFlags : uint8
     ScopeMask = NeverCull | UntrackedAccess
 };
 ```
+
+## 一些渲染中使用到的宏
+
+- **CSV_SCOPED_TIMING_STAT_EXCLUSIVE(RenderBasePass);**
+  用于 CSV（逗号分隔值）文件的分析，它创建一个作用域，在这个作用域内，指定的渲染 Pass（这里是 RenderBasePass）的时间会被测量并记录。使用 EXCLUSIVE 版本意味着只记录这个特定作用域的持续时间，不包括任何嵌套在其中的作用域的时间。参考：CSVProfiler.h
+- **SCOPED_DRAW_EVENT(RHICmdList, MobileBasePass);**
+  创建一个绘制事件的作用域，通常用于标记渲染过程中的一个特定阶段或 Pass
+- **SCOPE_CYCLE_COUNTER(STAT_BasePassDrawTime);**
+  用于统计 CPU 执行时间
+- **SCOPED_GPU_STAT(RHICmdList, Basepass);**
+  用于在作用域内执行的所有 GPU 命令的时间
+- **SCOPED_GPU_MASK(RHICmdList, Basepass);**
+  SCOPED_GPU_MASK 宏在虚幻引擎（Unreal Engine）中用于定义一个 GPU 执行的特定作用域，并且可以指定在这个作用域内执行的渲染命令应该在哪些 GPU 掩码上执行。这通常用于多视图渲染（Multi-view rendering）或者当需要针对特定的 GPU 执行流（如特定的视图或渲染通道）应用特定的渲染命令或设置时。
+  在多视图渲染中，不同的视图可能需要在 GPU 的不同部分执行，使用这个宏可以限制某些渲染命令只对特定的视图生效。
+
+
+去掉
+RDG_TEXTURE_ACCESS(LightShaftOcclusionTexture, ERHIAccess::SRVGraphics)
+RDG_TEXTURE_ACCESS(LinearDepthTexture, ERHIAccess::SRVGraphics)
+会不会对PC端FOG有影响
