@@ -529,13 +529,219 @@ f3(i);  // T->int&
 f3(ci);  // T->const int&
 ```
 
+引用折叠可能会带来一些意想不到的问题：
+
+```cpp
+template <typename T> void f3(T&& val) {
+    T t = val; // T的类型可能是值，也可能是引用
+    t = fcn(t);
+    if (val == t) { /* ... */ }
+}
+
+f3(10); // T被推断为int，t是值类型，所以t的变化不会影响val
+int i = 0;
+f3(i); // T被推断为int&，t是引用类型，t的变化会影响val
+```
+
+在实际中模板参数的右值引用用于两种情况（后面会详细讨论）：
+
+- 模板转发其实参
+- 模板被重载
+
+使用右值引用的模板函数进行函数重载时，通常：
+
+- 一个版本接受右值引用：绑定可修改的右值
+- 一个版本接受左值常量引用：绑定不可修改的右值和左值
+
+```cpp
+template <typename T> void f(T&& val) {
+	cout << "f(T&&)" << endl;
+}
+
+template <typename T> void f(const T& val) {
+	cout << "f(const T&)" << endl;
+}
+
+int i = 0;
+f(i); // f(const T&)
+f(42); // f(T&&)
+```
+
 ### 理解 std::move
+
+- 虽然不能直接将一个右值引用绑定到一个左值上，但可以用 move 获得一个绑定到左值上的右值引用。
+
+std::move 的实现：
+
+- 基于万能引用，move 可以接受任意类型的实参
+- 虽然不能隐式地将一个左值转换为右值引用，但我们可以用 static_cast 显式地将一个左值转换为一个右值引用。
+- 将一个右值引用绑定到一个左值的特性允许它们截断左值。
+
+```cpp
+template <typename T>
+typename remove_reference<T>::type&& move(T&& t) {
+	return static_cast<typename remove_reference<T>::type&&>(t);
+}
+
+string s1 = "hi",s2;
+s2 = std::move(string("bye")); // 临时对象
+s2 = std::move(s1); // 左值
+```
 
 ### 转发
 
+- 某些函数需要将其一个或多个实参连同类型不变地转发给其他函数。在此情况下，我们需要保持被转发实参的所有性质：
+  - 实参类型是否是 const
+  - 实参是左值还是右值
+
+```cpp
+template<typename F, typename T>
+void call(F f, T t){
+	f(t);
+}
+
+void func(int& i){
+	cout << ++i << endl;
+}
+
+int i = 0;
+func(i); // 引用传递，i发生变化
+call(func, i); // call推断为值类型，没有保留func的引用调用性质，i不会发生变化
+```
+
+我们可以尝试用万能引用，重新实现一下：
+
+- 不管传入的是左值还是右值，都会保持原有的引用的性质
+  - 如果传入左值，T 推断为 int& 类型，引用折叠为 int&
+  - 如果传入右值，T 推断为 int 类型，引用折叠为 int&&
+- 引用类型中 const 是底层的，因此也会被保留
+- 右值引用本身是一个左值，左值不能绑定到右值引用
+
+```cpp
+template<typename F, typename T>
+void call(F f, T&& t){
+	f(t); // 错误，右值引用本身是一个左值，左值不能绑定到右值引用
+}
+
+void func(int&& i){
+	cout << ++i << endl;
+}
+
+int i = 0;
+call(func, i);
+```
+
+可以使用 std::forward 来解决这个问题：
+
+- forward 定义在 utility 头文件中
+- std::forward\<T\>返回 T&&
+- 当用于一个指向模板参数类型的右值引用函数参数 T&&时，forward 会保持实参类型的所有细节。
+  - 传入模板参数的实参是左值，T 为 int&，t 为 int& &&，引用折叠为 int&，然后被
+    std::forward\<int&\>转为 int&，保持了 t 的引用性质
+  - 传入模板参数的实参是右值，T 为 int，t 为 int&&，然后被 std::forward\<int\>转为 int&&，同样保持了 t 的引用性质
+
+```cpp
+template <typename F, typename T>
+void call(F f, T&& t) {
+    f(std::forward<T>(t));
+}
+
+void fun_rval(int&& v) { cout << v << endl; }
+void fun_lval(int& v) { cout << v << endl; }
+
+int i = 42;
+call(fun_rval, 42);
+call(fun_lval, i);
+```
+
+std::move 和 std::forward 的区别：
+
+- std::move 先去掉引用，然后加上&&，因此返回的一定是右值引用
+- std::forward 保持引用性质，返回的是传入的引用类型
+
 ## 重载与模板
 
+- **候选函数**包括所有模板实参推断成功的函数模板实例，模板实参推断会排除任何不可行的模板
+- 与普通函数一样，可行函数（模板与非模板）按类型转换来排序。不过可用于函数模板调用的类型转换是非常有限的（const，数组和函数指针转换）
+- 如果有一个函数提供比任何其他函数都更好的匹配，则选择此函数。如果有多个函数提供同样好的匹配，则：
+  - 非模板函数优先于模板函数
+  - 模板函数中更特例化的版本优先于更通用的版本（指针版本比 const T&版本更特例化）
+  - 否则，二义性错误
+
+```cpp
+template <typename T>
+string debug_rep(const T &t) {/* ... */}
+template <typename T>
+string debug_rep(T *p) {/* ... */}
+
+string s("hi");
+cout << debug_rep(s) << endl;
+// 只有一个模板函数匹配，调用debug_rep<string>(const string&)
+
+cout << debug_rep(&s) << endl;
+// 有两个模板函数匹配，debug_rep<string*>(const string*&)和debug_rep<string>(string*)，前者涉及到底层const的转换，因此第二个匹配更好
+
+const string *sp = &s;
+cout << debug_rep(sp) << endl;
+// 有两个模板函数匹配，debug_rep<const string*>(const string*&)和debug_rep<const string>(const string*)，调用后者，指针版本更特例化
+```
+
+非模板函数优先于模板函数：
+
+```cpp
+template <typename T> string debug_rep(const T &t) {/* ... */}
+string debug_rep(const string &s) {/* ... */}
+
+string s("hi");
+cout << debug_rep(s) << endl; // 调用debug_rep(const string&)
+```
+
+更复杂的情况：
+
+```cpp
+template <typename T> string debug_rep(const T &t) {/* ... */} // 匹配为debug_rep<char[10]> (const char(&)[10])
+template <typename T> string debug_rep(T *p) {/* ... */} // 匹配为debug_rep<const char> (const char*)
+string debug_rep(const string &s) {/* ... */} // 需要一次转换，const char* -> string
+
+cout << debug_rep("hi!") << endl;
+// 三个函数都是可行的，但前两个是精确匹配，其中T *p更特例化，调用T *p版本
+```
+
+缺少声明可能导致调用错误的版本：
+
+- 在定义任何函数之前，记得声明所有重载的函数版本。这样就不必担心编译器由于未遇到你希望调用的函数而实例化一个并非你所需的版本。
+
+```cpp
+template <typename T> string debug_rep(const T &t);
+template <typename T> string debug_rep(T *p);
+string debug_rep(const string &s);
+string debug_rep(char *p);{
+	return debug_rep(string(p)); // 如果没有声明string debug_rep(const string &s);则会调用模板函数
+}
+```
+
 ## 可变参数模板
+
+- 可变参数模板：接受可变数目参数的模板函数或模板类。
+- 其中可变数目的参数称为参数包：
+  - 模板参数包：
+    - 表示零个或多个类型的列表
+    - `template <typename... Args>`
+  - 函数参数包：
+    - 表示零个或多个函数参数
+    - `void foo(T value, Args... rest);`
+- sizeof... 运算符：返回参数包中参数的数量
+
+```cpp
+template <typename T, typename... Args>
+void foo(const T &t, const Args&... rest) {
+	cout << sizeof...(Args) << endl; // 参数包中参数的数量
+	cout << sizeof...(rest) << endl; // 参数包中参数的数量
+}
+
+int i = 0; double d = 3.14; string s = "hello";
+foo(i, s, 42, d); // 实例化为void foo(const int&, const string&, const int&, const double&);
+```
 
 ### 编写可变参数模板
 
@@ -544,23 +750,3 @@ f3(ci);  // T->const int&
 ### 转发参数包
 
 ## 模板特例化
-
-```
-
-```
-
-```
-
-```
-
-```
-
-```
-
-```
-
-```
-
-```
-
-```
