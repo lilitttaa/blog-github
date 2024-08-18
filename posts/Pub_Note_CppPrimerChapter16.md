@@ -745,8 +745,135 @@ foo(i, s, 42, d); // 实例化为void foo(const int&, const string&, const int&,
 
 ### 编写可变参数模板
 
+- 可变参数函数通常将它们的参数转发给其他函数
+- 可变参数函数通常是递归的
+- 先调用处理包中的第一个实参，然后用剩余实参调用自身
+- 非可变参数模板比可变参数模板更特例化，编译器有限选择非可变参数版本
+
+```cpp
+template <typename T>
+ostream &print(ostream &os, const T &t) {
+	return os << t;
+}
+
+template <typename T, typename... Args>
+ostream &print(ostream &os, const T &t, const Args&... rest) {
+	os << t << ", ";
+	return print(os, rest...);
+}
+```
+
 ### 包扩展
+
+- 对于一个参数包，能做的事情只有：
+  - 使用 sizeof...获取包中参数的数量
+  - 扩展参数包
+- 扩展一个包的时候需要提供应用于每个扩展元素的模式
+
+```cpp
+template <typename T, typename... Args>
+ostream &errorMsg(ostream &os, const Args&... rest) {
+	// print(os, debug_rep(a1), debug_rep(a2), ..., debug_rep(an))
+	return print(os, debug_rep(rest)...);
+}
+```
 
 ### 转发参数包
 
+- 可以组合使用可变参数模板与 forward 机制来编写函数，实现将其实参不变地传递给其他函数
+
+```cpp
+class StrVec {
+public:
+    template <class... Args> void emplace_back(Args&&...);
+};
+
+template <class... Args>
+inline void StrVec::emplace_back(Args&&... args) {
+    chk_n_alloc();
+    alloc.construct(first_free++, std::forward<Args>(args)...);
+}
+```
+
 ## 模板特例化
+
+- 当定义一个特例化版本时，函数参数类型必须与一个先前声明的模板中对应的类型匹配。
+- 特例化的本质是实例化一个模板，而非重载它。因此，特例化不影响函数匹配。
+- 为了特例化一个模板，原模板的声明必须在作用域中。而且，在任何使用模板实例的代码之前，特例化版本的声明也必须在作用域中。
+- 模板及其特例化版本应该声明在同一个头文件中。所有同名模板的声明应该放在前面，然后是这些模板的特例化版本。
+
+```cpp
+template <typename T> int compare(const T& t1, const T& t2) {
+	if (t1 < t2) return -1;
+	if (t2 < t1) return 1;
+	return 0;
+}
+
+template <> int compare(const char* const &p1, const char* const &p2) {
+	// 参数需要与模板中的类型匹配，其中T为const char*，另外const T&中const修饰指针，因此最后的参数为const char* const &p1
+	return strcmp(p1, p2);
+}
+```
+
+- 除了函数模板，类模板也可以被特例化，下面以 hash 模板为例：
+  - 为了让 Sales data 的用户能使用 hash 的特例化版本，我们应该在 Sales data 的头文件中定义该特例化版本。
+
+```cpp
+namespace std { //打开std命名空间
+	template <typename T> struct hash;
+	template <> struct hash<Sales_data> {
+		typedef size_t result_type; // 要支持无序容器，必顧要定义 result_type和argument_type
+		typedef Sales_data argument_type;
+		size_t operator()(const Sales_data& s) const;
+	};
+size_t hash<Sales_data>::operator()(const Sales_data& s) const {
+	return hash<string>()(s.bookNo) ^ hash<unsigned>()(s.units_sold) ^ hash<double>()(s.revenue);
+}
+}
+
+// hash函数用到了Sales_data的私有成员，因此需要在Sales_data类中声明为友元
+template <class T> class std::hash;
+class Sales_data {
+friend class std::hash<Sales_data>;
+};
+
+unordered_multiset<Sales_data> SDset;
+```
+
+部分特例化：
+
+- 与函数模板不同，类模板的特例化不必为所有模板参数都提供实参
+- 类模板的部分特例化本身是模板，使用它时还必须为那些在特例化版本中未指定的模板参数提供实参
+- 部分特例化版本的模板参数列表是原始模板的参数列表的一个子集或者是一个特例化版本
+
+```cpp
+template<class T> struct remove_reference { typedef T type; };
+template<class T> struct remove_reference<T&> { typedef T type; }; // 部分特例化，接受左值引用类型
+template<class T> struct remove_reference<T&&> { typedef T type; }; // 部分特例化，接受右值引用类型
+
+int i = 42;
+remove_reference<decltype(42)>::type j;
+remove_reference<decltype((i))>::type k; // 使用左值引用特例化版本
+remove_reference<decltype(std::move(i))>::type l; // 使用右值引用特例化版本
+```
+
+特例化成员：
+
+- Foo\<int\>::Bar 是类模板的特例化
+- Foo::Bar\<int\>成员函数模板的特例化
+
+```cpp
+template <typename T> struct Foo {
+    Foo(const T &t = T()): mem(t) {}
+    void Bar() { /* ... */ }
+    T mem;
+};
+
+template<>
+void Foo<int>::Bar() { /* ... */ }
+
+Foo<string> fs; // 实例化为Foo<string>
+fs.Bar();
+Foo<int> fi; // 实例化为Foo<int>
+fi.Bar(); // 调用特例化的Bar函数
+```
