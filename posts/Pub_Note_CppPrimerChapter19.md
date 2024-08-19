@@ -225,6 +225,84 @@ t1.before(t2) // 比较两个对象的类型，如果 t1 在 t2 之前，则返�
 - C++包含两种枚举：
   - 限定作用域的
   - 不限定作用域
+- 默认情况下，枚举值从 О 开始，依次加 1。
+- 如果没有提供值，当前枚举成员的值等于之前枚举成员的值加 1
+
+```cpp
+enum class open_modes { input, output, append };
+open_modes om = open_modes::input;
+
+enum color { red, yellow, green };
+color col = red;
+
+enum { floatPrec = 6, doublePrec = 10 };
+```
+
+- 每个枚举成员本身就是一条常量表达式，可以在任何需要常量表达式的地方使用枚举成员，例如：
+  - switch 语句
+  - case 标签
+  - 非类型模板参数
+
+```cpp
+enum class open_modes { input, output, append };
+constexpr open_modes om = open_modes::input;
+switch (om) {
+case open_modes::input:
+	// ...
+	break;
+}
+
+template <open_modes om>
+class MyClass {
+	// ...
+};
+```
+
+类型转换：
+
+- 不限作用域的枚举类型可以隐式转换为整型
+- 限定作用域的枚举类型不会隐式转换为整型
+
+```cpp
+enum class open_modes { input, output, append };
+enum color { red, yellow, green };
+
+int i = open_modes::input; // 错误，不能隐式转换
+int j = color::red; // 正确，可以隐式转换
+```
+
+可以为 enum 指定类型：
+
+- 默认情况下限定作用域的 enum 成员类型是 int
+- 不限定作用域的枚举类型来说，其枚举成员不存在默认类型（因编译器而异），只知道成员的潜在类型足够大，肯定能够容纳枚举值。
+- 如果指定了类型，如果枚举值超出了指定类型的范围，编译器会报错
+- enum 的前置声明：
+  - 不限作用域的必须指定成员类型
+  - 限定作用域的可以使用默认 int 类型
+- 声明要保证：
+  - 是限定作用域还是非限定作用域要一致
+  - 成员大小要一致
+
+```cpp
+enum intValues : unsigned long long {
+	// ...
+};
+
+enum intValues : unsigned long long; // 不限定作用域的枚举类型前置声明
+enum class open_modes;// 限定作用域的枚举类型前置声明
+```
+
+- 要想初始化一个 enum 对象，必须使用该 enum 类型的对象或者枚举成员，而不能是整型
+- 但是可以将一个不限定作用域的枚举类型的对象或枚举成员传给整型形参，enum 提升为更大的整型
+- 枚举成员永远不会提升成 unsigned char，即使枚举值可以用 unsigned char 存储也是如此。
+
+```cpp
+void newf(unsigned char);
+void newf(int);
+unsigned char uc = VIRTUAL;
+newf(uc); // 调用 newf(unsigned char)
+newf(VIRTUAL); // 调用 newf(int)
+```
 
 ## 类成员指针
 
@@ -236,9 +314,61 @@ t1.before(t2) // 比较两个对象的类型，如果 t1 在 t2 之前，则返�
 
 ## 嵌套类
 
+- 定义在另外一个类内部的类称为嵌套类
+- 嵌套类是一个独立的类，与外层类基本没有什么关系
+- 外层类对嵌套类的成员没有特殊的访问权限，同样，嵌套类对外层类的成员也没有特殊的访问权限。
+- 嵌套类的名字在外层类作用域之外不可见。
+
 ## union：一种节省空间的类
 
 ## 局部类
+
+- 类可以定义在某个函数的内部，我们称这样的类为局部类
+- 局部类被封装在函数内部
+- 局部类定义的类型只在定义它的作用域内可见。
+- 局部类的所有成员（包括函数在内）都必须完整定义在类的内部
+- 在局部类中也不允许声明静态数据成员
+- 局部类：
+  - 能访问外层作用域定义的类型名、静态变量以及枚举成员
+  - 不能访问则该函数的普通局部变量
+
+```cpp
+int a, val;
+void foo(int val) {
+	static int si;
+	enum Loc { a = 1024, b = 2048 };
+	struct Bar {
+		Loc locVal;
+		int barVal;
+		void footBar(Loc l = a) {
+			barVal = val; // 错误，局部类不能访问函数的局部变量
+			barVal = ::val; // 访问全局变量
+			barVal = si; // 访问静态局部变量
+			locVal = b; // 访问枚举成员
+		}
+	};
+}
+```
+
+- 外层函数对局部类的私有成员没有任何访问特权，不过局部类可以将外层函数声明为友元
+- 更常见的情况是局部类将其成员声明成公有的，函数直接访问
+
+还可以在局部类中嵌套类：
+
+- 局部类内的嵌套类也是一个局部类，必须遵循局部类的各种规定。嵌套类的所有成员都必须定义在嵌套类内部。
+
+```cpp
+void foo() {
+    class Bar {
+    public:
+        class Nested;
+    };
+
+    class Bar::Nested {
+        // ...
+    };
+}
+```
 
 ## 固有的不可移植的特性
 
@@ -247,7 +377,3 @@ t1.before(t2) // 比较两个对象的类型，如果 t1 在 t2 之前，则返�
 ### volatile 限定符
 
 ### 链接指示 extern "C"
-
-```
-
-```
