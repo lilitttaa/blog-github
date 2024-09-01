@@ -39,7 +39,7 @@ title: 只狼解包
 
 ![Alt text](image-5.png)
 ![Alt text](image-6.png)
-![Alt text](image-7.png)
+![Alt text](image-30.png)
 就能看到各种参数了：
 ![Alt text](image-8.png)
 不过名字还看不到
@@ -48,7 +48,7 @@ title: 只狼解包
 
 ![Alt text](image-9.png)
 选择一个角色：
-![Alt text](image-13.png)
+![Alt text](image-7.png)
 ![Alt text](image-11.png)
 ![Alt text](image-12.png)
 这样就能看到角色各个动画，及其动画轨道了：
@@ -68,7 +68,7 @@ DSLuaDecompiler 项目不包含 exe 文件，需要自己编译，需要下载�
 ## AI 逻辑
 
 使用 Yabber 对 script 下的.dcx 文件进行解包：
-![Alt text](image-14.png)
+![Alt text](image-13.png)
 可能会遇到问题，根据提示 copy dll 就行：
 ![Alt text](image-15.png)
 于是会生成一个相应的目录：
@@ -88,13 +88,13 @@ DSLuaDecompiler 项目不包含 exe 文件，需要自己编译，需要下载�
 
 以 map 为例：
 ![Alt text](image-24.png)
-![Alt text](image-23.png)
+![Alt text](image-14.png)
 生成一个对应的目录：
 ![Alt text](image-26.png)
 可以看到目录里有.flver 文件：
 ![Alt text](image-25.png)
 然后使用 BloodBorne_model 生成.ascii 文件和.smd 文件：
-![Alt text](image-27.png)
+![Alt text](image-23.png)
 再通过 Blender 导入 smd 文件：
 ![Alt text](image-28.png)
 
