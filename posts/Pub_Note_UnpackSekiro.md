@@ -104,3 +104,5 @@ https://github.com/thefifthmatt/SoulsRandomizers/tree/master/dists/Names
 
 可以看到其中一部分编号的含义：
 ![Alt text](image-29.png)
+还可以使用汉化后的参数编辑器：
+https://wiki.biligame.com/sekiro/ParamEditor
