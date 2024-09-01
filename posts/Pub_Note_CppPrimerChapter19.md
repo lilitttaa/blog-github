@@ -321,6 +321,115 @@ newf(VIRTUAL); // 调用 newf(int)
 
 ## union：一种节省空间的类
 
+- union 是一种特殊的类，它可以有多个数据成员，但是在任意时刻只有一个数据成员可以有值。
+- 分配给一个 union 对象的存储空间至少要能容纳它的最大的数据成员。
+- 给 union 的某个成员赋值之后，该 union 的其他成员就变成未定义的状态了。
+- class 的某些特性对 union 并不适用：
+  - union 不能含有引用类型的成员
+  - 默认情况下，union 的成员是 public 的。
+  - union 不能继承自其他类，也不能作为基类，所以它不能含有虚函数。
+- 在 C++11 标准中，含有构造函数或析构函数的类类型也可以作为 union 的成员类型。
+
+```cpp
+union Token {
+    char cval;
+    int ival;
+    double dval;
+};
+
+Token first_token = {'a'};  // 初始化 cval
+Token last_token; // 未初始化
+Token *pt = new Token; //指向未初始化的Token对象
+
+last_token.cval = 'z'; // 令其他数据成员变成未定义的状态
+pt->ival = 42;
+```
+
+匿名 union：
+
+- 匿名 union 一旦被定义，编译器就自动为其创建一个未命名的对象
+- 在匿名 union 定义的作用域内该 union 的成员都是可以直接访问的。
+- 匿名 union 不能包含受保护的成员或私有成员（只能有默认的 public 的），也不能定义成员函数。
+
+```cpp
+union {
+    char cval;
+    int ival;
+    double dval;
+};
+cval = 'c';
+ival = 42;
+```
+
+包含类类型成员的 union：
+
+- 当 union 包含的是内置类型的成员时，我们可以使用普通的赋值语句改变 union 保存的值。
+- 但对于含有特殊类类型成员的 union：
+  - 将其他值改为类类型成员对应的值，必须构造该类型成员
+  - 将类类型成员的值改为一个其他值，必须析构该类类型的成员
+
+使用类管理 union 成员：
+
+- 对于 union 来说，要想构造或销毁类类型的成员必须执行非常复杂的操作
+- 因此我们通常把含有类类型成员的 union 内嵌在另一个类当中
+- 为了追踪 union 中到底存储了什么类型的值，我们通常会定义一个独立的对象，该对象称为 union 的判别式。
+
+```cpp
+class Token {
+public:
+    Token(): tok(INT), ival{0} {}
+    Token(const Token &t): tok(t.tok) { copyUnion(t); }
+    Token &operator=(const Token&);
+    ~Token() { if (tok == STR) sval.~string(); }
+
+    Token& operator=(const std::string&);
+    Token& operator=(char);
+    Token& operator=(int);
+    Token& operator=(double);
+private:
+    enum {INT, CHAR, DBL, STR} tok;
+    union {
+        char cval;
+        int ival;
+        double dval;
+        std::string sval;
+    };
+
+    void copyUnion(const Token&);
+};
+
+Token &Token::operator=(int i) {
+    if (tok == STR) sval.~string();
+    ival = i;
+    tok = INT;
+    return *this;
+}
+
+Token &Token::operator=(const std::string s&) {
+    if (tok == STR) sval = s;
+    else new (&sval) string(s);  // 需要使用定位new表达式
+    tok = STR;
+    return *this;
+}
+
+void Token::copyUnion(const Token &t) {
+    switch(t.tok) {
+        case Token::INT: ival = t.ival; break;
+        case Token::CHAR: cval = t.cval; break;
+        case Token::DBL: dval = t.dval; break;
+        case Token::STR: new (&sval) string(t.sval); break;
+    }
+}
+
+Token& Token::operator=(const Token &t) {
+    if (tok == STR && t.tok != STR) sval.~string();
+    if (tok == STR && t.tok == STR) sval = t.sval;
+    else copyUnion(t);
+    tok = t.tok;
+    return *this;
+}
+```
+
 ## 局部类
 
 - 类可以定义在某个函数的内部，我们称这样的类为局部类
@@ -372,8 +481,135 @@ void foo() {
 
 ## 固有的不可移植的特性
 
+- 所谓不可移植的特性是指因机器而异的特性
+- 当将含有不可移植特性的程序从一台机器转移到另一台机器上时，通常需要重新编写该程序
+
 ### 位域
+
+- 当一个程序需要向其他程序或硬件设备传递二进制数据时，通常会用到位域
+- 类可以将其(非静态)数据成员定义成位域
+- 位域在内存中的布局是与机器相关的
+- 位域的类型必须是整型或枚举类型
+- 因为带符号位域的行为是由具体实现确定的，所以在通常情况下我们使用无符号类型型保存一个位域
+- 取地址运算符(&)不能作用于位域，因此任何指针都无法指向类的位域
+- 位域的声明形式是在成员名字之后紧跟一个冒号以及一个常量表达式
+
+```cpp
+typedef unsigned int Bit;
+class File {
+    Bit mode: 2;
+    Bit modified: 1;
+    Bit prot_owner: 3;
+    Bit prot_group: 3;
+    Bit prot_world: 3;
+public:
+    enum modes { READ = 01, WRITE = 02, EXECUTE = 03 };
+    File &open(modes);
+    void close();
+    void write();
+    bool isRead() const;
+    void setWrite();
+};
+
+File &File::open(modes m) {
+    mode |= READ; // 通常使用位运算符来设置位域
+    return *this;
+}
+
+```
 
 ### volatile 限定符
 
+- 要想让使用了 volatile 的程序在移植到新机器或新编译器后仍然有效，通常需要对该程序进行某些改变。
+- 直接处理硬件的程序常常包含这样的数据元素：
+  它们的值由程序直接控制之外的过程控制。例如，程序可能包含一个由系统时钟定时更新的变量。当对象的值可能在程序的控制或检测之外被改变时，应该将该对象声明为 volatile。
+- 关键字 volatile 告诉编译器不应对这样的对象进行优化。
+- volatile 限定符的用法和 const 很相似，它起到对类型额外修饰的作用
+- 与 const 不同的是，不能使用合成的拷贝/移动构造函数以及赋值运算符初始化 volatile 对象或从 volatile 对象赋值
+
+```cpp
+volatile int display_register;
+volatile Task *curr_task;
+int *volatile vip;
+volatile int *const cvip;
+```
+
 ### 链接指示 extern "C"
+
+- C++程序有时需要调用其他语言编写的函数,最常见的是调用 C 语言编写的函数
+- 对于其他语言编写的函数来说，编译器检查其调用的方式与处理普通 C++函数的方式相同，但是生成的代码有所区别。
+- C++使用链接接指示指出任意非 C++函数所用的语言。
+- 要想把 C++代码和其他语言（包含 C 语言）编写的代码放在一起使用，要求必须有权访问该语言的编译器，且该编译器与当前的 C++编译器是兼容的。
+
+声明一个非 C++函数：
+
+- 链接指示可以有两种形式：
+  - 单个的
+  - 复合的
+- 链接指示不能出现在类定义或函数定义的内部。同样的链接指示必须在函数的每个声明中都出现。
+- 当一个\#include 指示被放置在复合链接指示的花括号中时，头文件中的所有普通函数声明都被认为是由链接指示的语言编写的。
+
+```cpp
+// 可能出现在头文件<cstring>中的链接指示
+extern "C" size_t strlen(const char *); // 单个链接指示
+
+extern "C" { // 复合链接指示
+    int strcmp(const char*, const char*);
+    char *strcat(char*, const char*);
+}
+
+extern "C" {
+#include <string.h>
+}
+```
+
+C++从 C 语言继承的标准库函数可以定义成 C 函数，但并并非必须：决定使用 C 还是 C++实现 C 标准库,是每个 C++实现的事情。
+
+指向 extern "C"函数的指针：
+
+- 链接指示（编写函数所用的语言）是函数类型的一部分，所以：
+  - 对于使用链接指示定义的函数来说，它的每个声明都必须使用相同的链接指示
+  - 函数指针必须与函数本身使用相同的链接指示
+- 有的 C++编译器会接受之前的这种赋值操作并将其作为对语言的扩展，尽管从严格意义上来看它是非法的。
+
+```cpp
+void (*pf1)(int); // C++函数
+extern "C" void (*pf2)(int); // C函数
+pf1 = pf2;  // 错误，类型不同
+```
+
+链接指示对整个声明都有效：
+
+- 对于函数、函数返回类型和函数形参中的函数指针都有效
+- 如果希望给 C++函数传入指向 C 函数的指针，必须使用类型别名
+
+```cpp
+extern "C" void f1(void(*)(int)); // f1是一个C函数，它的形参是一个C函数指针
+
+extern "C" typedef void (*FC)(int); // FC是一个C函数指针类型
+void f2(FC); // f2是一个C++函数，它的形参是一个C函数指针
+```
+
+导出 C++函数到其他语言：
+
+- 编译器将为该函数生成适合于指定语言的代码
+- 可被多种语言共享的函数的返回类型或形参类型受到很多限制：例如不能把 C++类传给 C 程序，C 也不支持函数重载
+
+```cpp
+extern "C" double calc(double dparm) { /* ...*/ } // calc可以被C程序调用
+
+extern "C" void print(const char *);
+extern "C" void print(int);  // 报错，不支持重载
+
+extern "C" double calc(double);
+extern int calc(int);  // 不报错，这个是C++的版本
+```
+
+有时需要在 C 和 C++中编译同一个源文件，为了实现这个目的，可以使用条件编译：
+
+```cpp
+#ifdef __cplusplus
+extern "C"
+#endif
+int strcmp(const char*, const char*);
+```

@@ -55,7 +55,8 @@
       "Pub_Frame_ReinforcementLearning",
       "Pub_Note_FoundationOfReinforcementLearning",
       "Pub_Note_PythonRegex",
-      "Pub_Note_PythonPackage"
+      "Pub_Note_PythonPackage",
+	  "Pub_Note_UnpackSekiro"
     ],
     "Cover": "program.png"
   },
