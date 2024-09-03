@@ -363,18 +363,6 @@
     "cover": "game.png",
     "created_at": "2024-06-21T12:48:43.957Z"
   },
-  "Pub_Note_WeDontNeedSoManyPeople": {
-    "title": "We Don't Need So Many People - 关于游戏开发团队的一些思考",
-    "created_at": "2024-08-04T01:26:51.265Z"
-  },
-  "Pub_Note_UnpackSekiro": {
-    "title": "只狼解包",
-    "created_at": "2024-09-01T07:06:26.596Z"
-  },
-  "Pub_Note_GameProfile": {
-    "title": "游戏性能优化",
-    "created_at": "2024-08-29T14:24:59.620Z"
-  },
   "Pub_Note_UbisoftNarrative": {
     "title": "Procedural Generation of Cinematic Dialogues in Assassin's Creed Odyssey",
     "created_at": "2024-07-29T13:29:33.779Z"
@@ -386,6 +374,10 @@
   "Pub_Note_TheArtOfFirewatch": {
     "title": "The Art of Firewatch",
     "created_at": "2024-08-08T12:25:06.271Z"
+  },
+  "Pub_Note_MingChaoProfile": {
+    "title": "鸣潮多平台优化",
+    "created_at": "2024-09-02T13:35:32.562Z"
   },
   "Pub_Note_LarianCinematics": {
     "title": "A Top-Down Look at Our Bottom-Up Approach in 'Baldur's Gate 3'",
@@ -399,6 +391,18 @@
   "Pub_Note_DialogueSystemAndToolsInFirewatch": {
     "title": "Dialogue System and Tools in Firewatch",
     "created_at": "2024-08-13T23:37:32.983Z"
+  },
+  "Pub_Note_WeDontNeedSoManyPeople": {
+    "title": "We Don't Need So Many People - 关于游戏开发团队的一些思考",
+    "created_at": "2024-08-04T01:26:51.265Z"
+  },
+  "Pub_Note_UnpackSekiro": {
+    "title": "只狼解包",
+    "created_at": "2024-09-01T07:06:26.596Z"
+  },
+  "Pub_Note_GameProfile": {
+    "title": "游戏性能优化",
+    "created_at": "2024-09-02T13:35:32.547Z"
   },
   "Pub_Note_OverviewOfGameEngine": {
     "title": "Overview Of Game Engine",

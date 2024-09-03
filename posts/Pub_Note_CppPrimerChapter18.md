@@ -286,9 +286,207 @@ while (std::cin >> item1 >> item2) {
 
 ### 命名空间定义
 
+- 命名空间既可以定义在全局作用域内，也可以定义在其他命名空间中，但是不能定义在函数或类的内部
+- 命名空间作用域后面无须分号
+- 访问命名空间之外的代码，需要使用作用域运算符 ::
+  ```cpp
+  namespace cpp_primer {
+  	class Query {};
+  }
+  cpp_primer::Query q;
+  ```
+- 命名空间可以是不连续的，可以在不同的文件中使用同一个命名空间
+- 通常情况下，不把#include 放在命名空间内部
+- 也可以在命名空间定义的外部定义该命名空间的成员。但声明必须在作用域内，定义需要明确指出其所属的命名空间：
+  ```cpp
+  cplusplus_primer::Sales_data cplusplus_primer::operator+(
+  	const Sales_data& lhs, const Sales_data& rhs) {
+  	/* ... */
+  }
+  ```
+- 成员可以定义在命名空间外部，但只能是命名空间的外层空间中，而不能在一个不相关的作用域中定义这个运算符。
+
+模板特例化：
+
+- 模板特例化必须定义在原始模板所属的命名空间中
+- 不过同样的，定义可以放在命名空间的外部，只要声明在命名空间内部即可
+
+```cpp
+namespace std {
+    template <> struct hash<Sales_data>;
+}
+
+template <> struct std::hash<Sales_data> {
+    size_t operator()(const Sales_data& s) const {
+        return hash<string>()(s.bookNo) ^ hash<string>()(s.units_sold) ^
+               hash<string>(s.revenue);
+    }
+}
+```
+
+全局作用空间：
+
+- 全局作用域中定义的名字被隐式地添加到全局命名空间中
+- 全局作用域是隐式的，所以它并没有名字，记作：`::member name`
+
+嵌套命名空间：
+
+```cpp
+namespace cplusplus_primer {
+	namespace QueryLib{
+		class Query {};
+		Query operator&(const Query&, const Query&);
+		// ...
+	}
+	namespace Bookstore {
+		class Quote {};
+		class Bulk_quote {};
+	}
+}
+cplusplus_primer::QueryLib::Query q;
+```
+
+内联命名空间：
+
+- 内联命名空间中的名字可以被外层命名空间直接使用
+- 可以用来区分不同版本的接口，比如当前版本放在内联命名空间，旧版本放在非内联命名空间
+
+```cpp
+// FifthEd.h
+inline namespace FifthEd {
+	class Query_base {};
+}
+namespace FifthEd { // 除了第一次inline，后续的定义都可以不加inline，隐式inline
+	class Query : public Query_base {};
+}
+
+// FourthEd.h
+namespace FourthEd {
+	class Item_base {};
+	class Query_base {};
+}
+
+// main.cpp
+namespace cplusplus_primer {
+	#include "FourthEd.h"
+	#include "FifthEd.h"
+}
+cplusplus_primer::Query_base q; // 直接使用最新版本
+cplusplus_primer::FourthEd::Query_base q; // 使用旧版本
+```
+
+未命名的命名空间：
+
+- 定义的变量具有静态生命周期
+- 可以在某个给定的文件内不连续，但是不能跨越多个文件。每个文件定义自己的未命名的命名空间，两个文件的未命名的命名空间相互无关。
+- 如果一个头文件定义了未命名的命名空间，则该命名空间中定义的名字将在每个包含了该头文件的文件中对应不同的实体。
+- 推荐使用未命名空间的变量取代 static 声明的变量（保持文件外部变量不可见）
+
+```cpp
+int i;
+namespace {
+    int i;
+}
+// 二义性：i的定义既可以是全局的，又可以是未命名命名空间的
+i = 10;
+```
+
+```cpp
+namespace local {
+    namespace {
+        int i;
+    }
+}
+
+local::i = 42;
+```
+
 ### 使用命名空间成员
 
+- 有多种方法可以简写命名空间中的成员：
+  - 命名空间别名
+  - using 声明
+  - using 指示
+
+```cpp
+// 别名
+namespace cplusplus_primer {
+	namespace QueryLib {
+	int i = 16, j = 15, k = 23;
+	}
+}
+namespace query = cplusplus_primer::QueryLib;
+cout<<query::i<<endl;
+
+// using 声明，一次只引入一个成员
+using std::vector;
+
+// using 指示
+using namespace std;
+```
+
+- using 声明：
+  - using 声明的有效范围从 using 声明的地方开始，一直到 using 声明所在的作用域结束为止。
+  - 声明语句可以出现在全局作用域、局部作用域、命名空间作用域以及类的作用域中
+  - 在类的作用域中，这样的声明语句只能指向基类成员。
+
+```cpp
+using std::vector;
+void f() {
+	using std::string;
+	string s;
+}
+class Derived : public Base {
+public: // 改变成员的可访问性
+	using Base::fcn;
+};
+```
+
+- using 指示：
+  - using 指示使得某个特定的命名空间中所有的名字都可见
+  - using 指示可以出现在全局作用域、局部作用域和命名空间作用域中，但是不能出现在类的作用域中。
+  - using 指示容易导致二义性
+  - using 指示一般只在命名空间本身的实现文件中使用
+
+```cpp
+namespace A {
+    int i, j;
+}
+
+void f() {
+    using namespace A;
+    cout << i * j << endl;
+}
+```
+
+```cpp
+namespace blip {
+    int i = 16, j = 15, k = 23;
+}
+
+int j = 0;
+void manip() {
+    using namespace blip;
+    ++i;
+    ++j;  // 二义性错误
+    ++::j;
+    ++blip::j;
+    int k = 97;  // 局部k隐藏了blip::k
+    ++k;  // 98
+}
+```
+
+头文件与 using 声明或指示：
+
+- using 指示或 using 声明如果是在头文件，则会将名字注入到所有包含了该头文件的文件中。
+- 通常，头文件最多只能在它的函数或命名空间内使用 using 指示或 using 声明
+
 ### 命名空间与作用域
+
+- 对命名空间内部名字的查找遵循常规的查找规则：由内向外依次查找每个外层作用域。
+- 有一个例外：它使得我们可以直接访问输出运算符。这个例外是，当我们给函数传递一个类类型的对象时，
+除了在常规的作用域查
+找外还会查找实参类所属的命名空间。这一例外对于传递类的引用或指针的调用同样有效。
 
 ### 重载与命名空间
 

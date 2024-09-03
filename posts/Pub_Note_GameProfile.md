@@ -28,3 +28,7 @@ VMTools 安装失败：
 ## Others
 
 ![alt text](image.png)
+
+## Instrument
+
+- [Instrument 工具使用](https://juejin.cn/post/6865102561507672077)
