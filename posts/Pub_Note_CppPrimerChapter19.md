@@ -306,7 +306,45 @@ newf(VIRTUAL); // 调用 newf(int)
 
 ## 类成员指针
 
+- 成员指针是指可以指向类的非静态成员的指针，指示的是类的成员，而非类的对象
+- 类的静态成员不属于任何对象，指向静态成员的指针与普通指针没有任何区别。
+- 成员指针的类型囊括了类的类型以及成员的类型。
+- 当初始化一个这样的指针时，我们令其指向类的某个成员，但是不指定该成员所属的对象，直到使用成员指针时，才提供成员所属的对象。
+
 ### 数据成员指针
+
+```cpp
+class Screen {
+public:
+	typedef std::string::size_type pos;
+	char get_cursor() const { return contents[cursor]; }
+	char get() const;
+	char get(pos ht, pos wd) const;
+	Screen &move(pos r, pos c);
+	static const std::string Screen::*data() { return &Screen::contents; }
+private:
+	std::string contents;
+	pos cursor;
+	pos height, width;
+};
+
+const string Screen::*pdata = &Screen::contents;
+Screen myScreen, *pScreen = &myScreen;
+char c1 = myScreen.*pdata; // 等价于 myScreen.contents
+char c2 = pScreen->*pdata; // 等价于 pScreen->contents
+```
+
+- 常规的访问控制规则对成员指针同样有效，由于在外边无法访问私有成员，因此通常使用一个静态成员函数返回一个指向私有成员的指针。
+
+```cpp
+class Screen {
+public:
+    static const std::string Screen::*data() { return &Screen::contents; }
+};
+
+const string Screen::*pdata = Screen::data();
+auto s = myScreen.*pdata;
+```
 
 ### 成员函数指针
 
