@@ -348,7 +348,107 @@ auto s = myScreen.*pdata;
 
 ### 成员函数指针
 
+定义成员函数指针的方法如下：
+
+```cpp
+// 1. auto
+auto pmf = &Screen::get_cursor;
+
+// 2. 显示的指定类型，这样可以处理重载的情况
+char (Screen::*pmf2)(Screen::pos, Screen::pos) const;
+pmf2 = &Screen::get;
+
+char Screen::*pmf2(Screen::pos, Screen::pos) const; // 错误，函数调用运算符优先级高，pmf2会被看作是函数声明，且非成员函数不能使用const
+pmf2 = Screen::get; // 错误，成员函数与指针之间没有隐式转换
+
+// 3. 使用 using 别名
+using Action = char (Screen::*)(Screen::pos, Screen::pos) const;
+Action get = &Screen::get;
+```
+
+使用成员函数指针：
+
+```cpp
+Screen myScreen, *pScreen = &myScreen;
+char c1 = (pScreen->*pmf)(0, 0); // 函数调用运算符优先级，同样需要加括号
+char c2 = (myScreen.*pmf2)(0, 0);
+```
+
+成员函数指针还可以作为参数和返回值：
+
+```cpp
+Action get = &Screen::get;
+Screen& action(Screen&, Action = &Screen::get);
+Screen myScreen;
+action(myScreen, get);
+```
+
+成员指针函数表：
+
+```cpp
+class Screen {
+public:
+    Screen& home();
+    Screen& forward();
+    Screen& back();
+    Screen& up();
+    Screen& down();
+
+    using Action = Screen& (Screen::*)();
+    enum Directions { HOME, FORWARD, BACK, UP, DOWN };
+    Screen& move(Directions);
+private:
+    static Action Menu[];  // 函数表
+};
+
+Screen& Screen::move(Directions cm) {
+    return (this->*Menu[cm])();
+}
+
+Screen::Action Screen::Menu[] = {
+    &Screen::home,
+    &Screen::forward,
+    &Screen::back,
+    &Screen::up,
+    &Screen::down
+};
+
+Screen myScreen;
+myScreen.move(Screen::HOME); // 调用myScreen.home()
+```
+
 ### 将成员函数作为可调用对象
+
+- 成员函数指针必须作用于对象上，因此不能直接用于泛型算法中
+- 三种将其转为可调用对象的方法，都定义在头文件 functional 中：
+  - function
+  - mem_fn
+  - bind
+
+```cpp
+vector<string> svec;
+vector<string*> pvec;
+
+// function
+// 本质上function将函数调用转换为了 ((*it).*p())的形式
+function<bool (const string&)> fcn = &string::empty;
+find_if(svec.begin(), svec.end(), fcn);
+
+function<bool (const string*)> fcn = &string::empty;
+find_if(pvec.begin(), pvec.end(), fcn);
+
+// mem_fn
+find_if(svec.beign(), svec.end(), mem_fn(&string::empty));
+auto f = mem_fn(&string::empty);
+f(*svec.begin()); // 支持重载，引用版本
+f(&svec[0]); // 支持重载，指针版本
+
+// bind
+auto it = find_if(svec.begin(), svec.end(), bind(&string::empty, _1));
+auto f = bind(&string::empty, _1);
+f(*svec.begin()); // 支持重载，引用版本
+f(&svec[0]); // 支持重载，指针版本
+```
 
 ## 嵌套类
 
@@ -356,6 +456,28 @@ auto s = myScreen.*pdata;
 - 嵌套类是一个独立的类，与外层类基本没有什么关系
 - 外层类对嵌套类的成员没有特殊的访问权限，同样，嵌套类对外层类的成员也没有特殊的访问权限。
 - 嵌套类的名字在外层类作用域之外不可见。
+- 在嵌套类在其外层类之外完成真正的定义之前,它都是一个不完全类型
+
+```cpp
+class TextQuery {
+public:
+    class QueryResult;  // 嵌套类的声明
+};
+
+class TextQuery::QueryResult {  // 嵌套类可以在外部定义，也可以在内部定义
+    friend std::ostream& print(std::ostream&, const QueryResult&);
+public:
+    QueryResult(std::string,
+                std::shared_ptr<std::set<line_no>>,
+                std::shared_ptr<std::vector<std::string>>);
+};
+
+TextQuery::QueryResult::QueryResult(std::string s,
+                                    std::shared_ptr<std::set<line_no>> p,
+                                    std::shared_ptr<std::vector<std::string>> f):
+                                    sought(s), lines(p), file(f) {}
+int TextQuery::QueryResult::static_mem = 1024;
+```
 
 ## union：一种节省空间的类
 
@@ -363,16 +485,16 @@ auto s = myScreen.*pdata;
 - 分配给一个 union 对象的存储空间至少要能容纳它的最大的数据成员。
 - 给 union 的某个成员赋值之后，该 union 的其他成员就变成未定义的状态了。
 - class 的某些特性对 union 并不适用：
-  - union 不能含有引用类型的成员
-  - 默认情况下，union 的成员是 public 的。
-  - union 不能继承自其他类，也不能作为基类，所以它不能含有虚函数。
+- union 不能含有引用类型的成员
+- 默认情况下，union 的成员是 public 的。
+- union 不能继承自其他类，也不能作为基类，所以它不能含有虚函数。
 - 在 C++11 标准中，含有构造函数或析构函数的类类型也可以作为 union 的成员类型。
 
 ```cpp
 union Token {
-    char cval;
-    int ival;
-    double dval;
+  char cval;
+  int ival;
+  double dval;
 };
 
 Token first_token = {'a'};  // 初始化 cval
@@ -558,18 +680,41 @@ File &File::open(modes m) {
 
 ### volatile 限定符
 
-- 要想让使用了 volatile 的程序在移植到新机器或新编译器后仍然有效，通常需要对该程序进行某些改变。
+- volatile 关键字可以用来提醒编译器使用 volatile 声明的变量随时有可能改变，因此编译器在代码编译时就不会对该变量进行某些激进的优化，故而编译生成的程序在每次存储或读取该变量时，都会直接从内存地址中读取数据
 - 直接处理硬件的程序常常包含这样的数据元素：
   它们的值由程序直接控制之外的过程控制。例如，程序可能包含一个由系统时钟定时更新的变量。当对象的值可能在程序的控制或检测之外被改变时，应该将该对象声明为 volatile。
-- 关键字 volatile 告诉编译器不应对这样的对象进行优化。
+- 要想让使用了 volatile 的程序在移植到新机器或新编译器后仍然有效，通常需要对该程序进行某些改变。
 - volatile 限定符的用法和 const 很相似，它起到对类型额外修饰的作用
 - 与 const 不同的是，不能使用合成的拷贝/移动构造函数以及赋值运算符初始化 volatile 对象或从 volatile 对象赋值
+- 可以将成员函数定义成 volatile 的，只有 volatile 的成员函数才能被 volatile 的对象调用。
 
 ```cpp
 volatile int display_register;
-volatile Task *curr_task;
-int *volatile vip;
-volatile int *const cvip;
+volatile Task *curr_task; // curr_task是一个指向volatile Task对象的指针
+volatile int iax[max_size]; // 每个元素都是 volatile int
+
+int *volatile vip; // vip是volatile指针，指向int
+int volatile *ivp; // ivp是指向volatile int的指针
+volatile int *volatile vivp; // vivp是volatile指针，指向volatile int
+```
+
+合成的拷贝对 volatile 对象无效：
+
+- const 和 volatile 的一个重要区别是：我们不能使用合成的拷贝/移动构造函数、赋值运算符。因为合成的这些函数接受的是非 volatile 对象
+- 如果类希望支持 volatile 对象，必须自己定义这些操作
+
+```cpp
+class Foo {
+public:
+  Foo(const volatile Foo&); //从一个volatile对象进行拷贝
+
+  //将一个volatile对象赋值给一个非volatile对象
+  Foo& operator=(volatile const Fook);
+
+  //将一个volatile对象赋值给一个volatile对象
+  Foo& operator=(volatile const Foo&) volatile;
+//Foo类的剩余部分
+};
 ```
 
 ### 链接指示 extern "C"
