@@ -280,7 +280,7 @@
   },
   "Pub_Note_UnrealPathAndName": {
     "title": "Unreal Path And Name",
-    "created_at": "2024-08-02T14:21:43.245Z"
+    "created_at": "2024-09-03T16:04:42.552Z"
   },
   "Pub_Note_UnrealKismet": {
     "title": "Unreal Kismet",
@@ -328,7 +328,7 @@
   },
   "Pub_Note_HowToReadUnrealCode": {
     "title": "How To Read Unreal Code",
-    "created_at": "2024-08-08T12:25:05.931Z"
+    "created_at": "2024-09-03T16:04:42.542Z"
   },
   "Pub_Note_HowToDebug": {
     "title": "Unreal Engine Debug",
@@ -403,6 +403,10 @@
   "Pub_Note_GameProfile": {
     "title": "游戏性能优化",
     "created_at": "2024-09-02T13:35:32.547Z"
+  },
+  "Pub_Note_AutomationProfileTest": {
+    "title": "自动化性能测试",
+    "created_at": "2024-09-03T16:04:42.921Z"
   },
   "Pub_Note_OverviewOfGameEngine": {
     "title": "Overview Of Game Engine",
@@ -488,7 +492,7 @@
   },
   "Pub_Note_CppPrimerChapter18": {
     "title": "C++ Primer 18.用于大型程序的工具",
-    "created_at": "2024-08-04T23:42:37.438Z"
+    "created_at": "2024-09-03T16:04:42.616Z"
   },
   "Pub_Note_CppPrimerChapter17": {
     "title": "C++ Primer 17.标准库特殊设施",

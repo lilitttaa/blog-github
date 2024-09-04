@@ -484,20 +484,281 @@ void manip() {
 ### 命名空间与作用域
 
 - 对命名空间内部名字的查找遵循常规的查找规则：由内向外依次查找每个外层作用域。
-- 有一个例外：它使得我们可以直接访问输出运算符。这个例外是，当我们给函数传递一个类类型的对象时，
-除了在常规的作用域查
-找外还会查找实参类所属的命名空间。这一例外对于传递类的引用或指针的调用同样有效。
+- 有一个例外：当函数参数是类类型的对象时，还会查找该类所属的命名空间。对于类的引用或指针同样有效。这使得我们可以直接访问输出运算符。
+  ```cpp
+  std::string s;
+  std::cin >> s; // 等价于 operator>>(std::cin, s);通过查找 string 类所在的命名空间，这样可以直接使用operator>>
+  // 如果没有这个规则，我们不得不写作：std::operator>>(std::cin, s);
+  ```
+
+```cpp
+namespace A {
+    class C {
+        friend void f2();
+        friend void f(const C&);
+    };
+}
+
+int main() {
+    A::C cobj;
+    f(cobj);  // 正确，通过实参查找找到A::f
+    f2();     // 错误，A::f2没有被声明
+}
+```
 
 ### 重载与命名空间
+
+- 如前面所述，名字查找将在实参类（及其基类）所属的命名空间中进行。该规则影响确定候选函数集。在这些命名空间中所有与被调用函数同名的函数都将被添加到候选集当中，即使其中中某些函数在调用语句处不可见：
+
+  ```cpp
+  namespace NS {
+  	class Quote { /* ... */ };
+  	void display(const Quote&) { /* ... */ }
+  }
+  class Bulk_item: public NS::Quote { /* ... */ };
+
+  int main() {
+  	Bulk_item book1;
+  	display(book1);  // 通过类类型实参对应的基类所在的命名空间进行查找
+  	return 0;
+  }
+  ```
+
+重载和 using 声明：
+
+- using 声明语句声明的是一个名字，而非一个特定的函数
+- 当为函数书写 using 声明时，该函数的所有版本都会被引入到当前作用域中
+- 如果 usina 声明出现在局部作用域中，则引入的名字将隐藏外层作用域的相关声明
+- 如果 using 声明所在的作用域中已经有一个函数与新引入的函数同名且形参列表相同，则发生错误。
+
+```cpp
+namespace ns {
+	void f(int){
+		cout << "ns::f(int)" << endl;
+	}
+}
+void f(int){
+	cout << "f(int)" << endl;
+}
+void f(const char*){
+	cout << "f(const char*)" << endl;
+}
+int main()
+{
+	using ns::f;
+	f(42);  // ns::f(int)
+	f("42");  // 错误：f(const char*)被隐藏
+    return 0;
+}
+```
+
+重载和 using 指示：
+
+- 与 using 声明不同，using 指示引入与已有函数形参列表完全相同的函数并不会产生错误。此时，只要我们指明调用的是哪个版本即可。
+
+```cpp
+namespace ns {
+	void f(int){
+		cout << "ns::f(int)" << endl;
+	}
+}
+void f(int){
+	cout << "f(int)" << endl;
+}
+using ns::f; // 错误，两个函数冲突
+int main()
+{
+
+	f(42);
+	return 0;
+}
+```
+
+```cpp
+namespace ns {
+	void f(int){
+		cout << "ns::f(int)" << endl;
+	}
+}
+void f(int){
+	cout << "f(int)" << endl;
+}
+using namespace ns; // OK
+int main()
+{
+
+	::f(42);
+	ns::f(42);
+	return 0;
+}
+```
+
+跨越多个 using 指示的重载：
+
+- 如果存在多个 using 指示,则来自每个命名空间的名字都会成为候选函数集的一部分
+
+```cpp
+namespace AW{
+	int print(int);
+}
+namespace Primer{
+	double print(double);
+}
+using namespace AW;
+using namespace Primer;
+long double print(long double);
+int main(){
+	print(1); // AW::print(int)
+	print(1.0); // Primer::print(double)
+}
+```
 
 ## 多重继承和虚继承
 
 ### 多重继承
 
+- 多重继承是指从多个直接基类中产生派生类的能力
+- 如果访问说明符被忽略掉了，对于 class 来说默认是 private，对于 struct 来说默认是 public
+- 多重继承的派生列表也只能包含已经被定义过的类，而且这些类不能是 final 的。
+- 多重继承的派生类从每个基类中继承状态
+
+![Alt text](image-1.png)
+
+派生类构造函数初始化所有基类：
+
+- 基类的构造顺序与派生列表中基类的出现顺序保持一致（内存中的顺序），与初始化列表中的顺序无关
+
+继承的构造函数与基类：
+
+- C++11 允许派生类从它的基类中继承构造函数，但如果从多个基类中继承了相同的构造函数，则程序将产生错误：
+
+```cpp
+struct Base1 {
+    Base1() = default;
+    Base1(const std::string&);
+    Base1(std::shared_ptr<int>);
+};
+struct Base2 {
+    Base2() = default;
+    Base2(const std::string&);
+    Base2(int);
+};
+
+// 错误，D1试图从两个基类中都继承D1::D1(const std::string&)
+struct D1: public Base1, public Base2 {
+    using Base1::Base1;
+    using Base2::Base2;
+};
+
+// 正确
+struct D2: public Base1, public Base2 {
+    using Base1::Base1;
+    using Base2::Base2;
+    D2(const std::string& s): Base1(s), Base2(s) {} // D2必须定义一个接受string的构造函数
+    D2() = default;  // 一旦D2定义了构造函数，就必须定义默认构造函数
+};
+```
+
+析构函数与多重继承：
+
+- 析构函数的调用顺序与构造函数正好相反。合成的拷贝/移动操作的顺序与构造函数一致。
+
 ### 类型转换与多个基类
+
+- 多基类与单基类类似，派生类的指针或引用能自动转换成一个可访问基类的指针或引用
+  ```cpp
+  void Print(const Bear& bear) {
+  	cout << bear << endl;
+  }
+  Panda panda;
+  Print(panda); // Panda -> Bear
+  ```
+- 编译器不会在派生类向基类的几种转换中进行比较和选择，在它看来转换到任意一种基类都一样好。
+
+  ```cpp
+  void print(const Bear&);
+  void print(const Endangered&);
+
+  Panda ying_yang("ying_yang");
+  print(ying_yang);  // 二义性错误
+  ```
 
 ### 多重继承下的类作用域
 
+- 在单基类的情况下，派生类的作用域嵌套在直接基类和间接基类的作用域中。查找过程沿着继承体系自底向上进行，直到找到所需的名字。
+- 派生类的名字将隐藏基类的同名成员。
+- 在多重继承的情况下，相同的查找过程在所有直接基类中同时进行。如果名字在多个基类中都被找到，则对该名字的**使用**将具有二义性（指定基类名字解决二义性）。
+- 要想避免潜在的二义性，最好的办法是在派生类中为该函数定义一个新版本。
+
+```cpp
+class Base1 {
+public:
+    int val = 1;
+};
+
+class Base2 {
+public:
+    int val = 2;
+};
+
+class Derived: public Base1, public Base2 {};
+
+int main() {
+    Derived d;
+    cout << d.val << endl;  // 二义性错误
+    cout << d.Base1::val << endl;  // 1
+    return 0;
+}
+```
+
+```cpp
+double Panda::max_weight() const {
+    return std::max(ZooAnimal::max_weight(), Endangered::max_weight());
+}
+```
+
 ### 虚继承
 
+- 菱形继承或者，基类间有继承关系会导致派生类多次继承同一个基类，这种情况下，基类的多个实例将出现在派生类对象中。
+- 虚继承用来解决这样的问题，共享的基类子对象称为虚基类，它能够保证派生类中只包含唯一一个共享的虚基类子对象。
+- 虚派生只影响从指定了虚基类的派生类中进一步派生出的类,它不会影响派生类本身。
+- 在实际的编程过程中，位于中间层次的基类将其继承声明为虚继承一般不会带来什么问题。通常情况下，使用虚继承的类层次是由一个人或一个项目组一次性设计完成的。
+
+![Alt text](image-2.png)
+
+```cpp
+class Raccon : public virtual ZooAnimal {};
+class Bear : virtual public ZooAnimal {}; // virtual 和 public 的顺序可以互换
+class Panda : public Raccon, public Bear, public Endangered {};
+```
+
+虚继承的可见性：
+
+- 假定 B 定义了名为 x 的成员，D1 和 D2 都是从 B 虚继承得到，D 继承了 D1 和 D2，则在 D 的作用域中，x 通过 D 的两个基类都是可见的。此时通过 D 使用 x，有三种情况：
+  - D1/D2 都没定义 x，则 x 被解析为 B 的成员，不存在二义性
+  - 如果 x 是 B 的成员，同时是 D1 和 D2 中某一个的成员，不存在二义性，派生类的 x 比共享虚基类 B 的 x 优先级更高
+  - 如果 D1 和 D2 中都有 x 的定义，则直接访问 x 将产生二义性问题
+
+```cpp
+class B {
+public:
+	int x;
+};
+class D1 : public virtual B {};
+class D2 : public virtual B {};
+class D : public D1, public D2 {};
+D d;
+d.x = 10;
+```
+
+- 与非虚的多重继承体系一样，解决二义性问题的最好方法是在派生类中为成员自定义新的实例。
+
 ### 构造函数与虚继承
+
+- 在虚派生中，虚基类是由最底层的派生类负责初始化的
+- 先执行虚基类的构造，然后是按照声明的顺序执行非虚基类的构造，最后执行派生类的构造
+
+```cpp
+Derived::Derived():
+    Obj(), Base1(), Base2() {}
+```
