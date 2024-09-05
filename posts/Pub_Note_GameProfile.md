@@ -5,6 +5,8 @@ title: 游戏性能优化
 ## Resources
 
 - [Unity 移动端游戏性能优化](https://zhuanlan.zhihu.com/p/403433893)
+- [UE5 性能优化笔记](https://zhuanlan.zhihu.com/p/713335451)
+- [Graphic Debugger工具大杂烩，你要的都在这](https://zhuanlan.zhihu.com/p/70780719)
 
 ## Black Apple
 
