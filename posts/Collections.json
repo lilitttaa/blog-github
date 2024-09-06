@@ -15,7 +15,8 @@
       "Pub_Note_IntroductionToCharacterAnimation",
       "Pub_Note_MathBackground",
       "Pub_Note_FF16",
-      "Pub_Note_UnrealPathAndName"
+      "Pub_Note_UnrealPathAndName",
+	  "Pub_Note_Games101_1"
     ],
     "Cover": "game.png"
   },
@@ -43,8 +44,7 @@
       "Pub_Note_CppPrimerChapter18",
       "Pub_Note_CppPrimerChapter19",
       "Pub_Note_Traits",
-      "Pub_Note_MoveSemantics",
-	  "Pub_Note_Games101_1"
+      "Pub_Note_MoveSemantics"
     ],
     "Cover": "coffee.png"
   },
