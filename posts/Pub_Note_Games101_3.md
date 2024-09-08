@@ -95,9 +95,9 @@ y' 是 c 和 d 的线性组合：$y' = cx + dy$
 
 我们把这样的变换叫做线性变换。
 
-## Homogeneous coordinates
+## Homogeneous Coordinates
 
-### Why homogeneous coordinates?
+### Why Homogeneous Coordinates?
 
 前面线性变换里涉及到一个很重要的点：用相同的维度的矩阵来乘以这个向量。
 
@@ -107,7 +107,7 @@ y' 是 c 和 d 的线性组合：$y' = cx + dy$
 ![Alt text](image-14.png)
 
 - 平移变换不能表示为前面提到的线性变换的形式，即平移变换不属于线性变换。
-- 但对于变换来说，我们总是想要将其表示为矩阵乘以向量的形式，不想带上$\begin{bmatrix}tx\\ty\end{bmatrix}$这样的尾巴。(人类总是懒的，懒惰其是一个美德，人类的进步很多都是因为懒惰带来的)
+- 但对于变换来说，我们总是想要将其表示为矩阵乘以向量的形式，不想带上$\begin{bmatrix}tx\\ty\end{bmatrix}$这样的尾巴。(人类总是懒的，懒惰是一个美德，人类的进步很多都是因为懒惰带来的)
 
 ### Homogeneous Coordinates
 
@@ -124,7 +124,7 @@ y' 是 c 和 d 的线性组合：$y' = cx + dy$
 另外，把点最后设为 1，向量最后设为 0，还考虑到：
 ![Alt text](image-16.png)
 
-- 对于点加上点，本来就没什么意义。加上过后最后一位变成 2 了，人们扩充了它的定义，在齐次坐标下，点的坐标是 x 除以 w 和 y 除以 w。所以最终点加上点的结果是它们的中点。
+- 对于点加上点，本来就没什么意义。加上过后最后一位变成 2 了，人们扩充了它的定义，在齐次坐标下，点的坐标是 x 除以 w 和 y 除以 w。所以点加上点的结果是它们的中点。
 
 ### Affine Transform
 
