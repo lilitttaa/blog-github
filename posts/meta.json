@@ -248,7 +248,7 @@
   },
   "Pub_Note_RHI": {
     "title": "Unreal Engine RHI API",
-    "created_at": "2024-08-15T12:40:21.237Z"
+    "created_at": "2024-09-11T12:28:20.200Z"
   },
   "Pub_Note_RenderingPipeline": {
     "title": "Unreal Engine Rendering Pipeline",
@@ -392,9 +392,9 @@
     "title": "Dialogue System and Tools in Firewatch",
     "created_at": "2024-08-13T23:37:32.983Z"
   },
-  "Pub_Note_WeDontNeedSoManyPeople": {
-    "title": "We Don't Need So Many People - 关于游戏开发团队的一些思考",
-    "created_at": "2024-08-04T01:26:51.265Z"
+  "Pub_Note_AutomationProfileTest": {
+    "title": "自动化性能测试",
+    "created_at": "2024-09-03T16:04:42.921Z"
   },
   "Pub_Note_UnpackSekiro": {
     "title": "只狼解包",
@@ -407,10 +407,6 @@
   "Pub_Note_GameProfile": {
     "title": "游戏性能优化",
     "created_at": "2024-09-05T14:33:46.720Z"
-  },
-  "Pub_Note_AutomationProfileTest": {
-    "title": "自动化性能测试",
-    "created_at": "2024-09-03T16:04:42.921Z"
   },
   "Pub_Note_Games101_4": {
     "title": "Games101 4.Transformation Cont.",

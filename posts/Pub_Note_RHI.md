@@ -14,3 +14,23 @@ title: Unreal Engine RHI API
 
 例如：从渲染不透明物体的 Subpass 转换到渲染透明物体的 Subpass
 ![alt text](image.png)
+
+### MeshPassProcessor
+
+![alt text](image-1.png)
+![alt text](image-2.png)
+
+### 半透明排序
+
+![alt text](image-3.png)
+使用 Union:
+![alt text](image-4.png)
+![alt text](image-5.png)
+
+### DrawMesh
+
+![alt text](image-6.png)
+
+### Material 相关的 Flag
+
+![alt text](image-7.png)
