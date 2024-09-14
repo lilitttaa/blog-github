@@ -8,6 +8,9 @@ title: 游戏性能优化
 - [UE5 性能优化笔记](https://zhuanlan.zhihu.com/p/713335451)
 - [Graphic Debugger 工具大杂烩，你要的都在这](https://zhuanlan.zhihu.com/p/70780719)
 - [SnapDragon 学习](https://www.cnblogs.com/revoid/p/12838221.html)
+- [awesome-game-tester](https://github.com/jianbing/awesome-game-tester)
+- [UFSH2023 虚幻引擎跨平台性能优化实践 | 李赫峥 RealLink](https://www.bilibili.com/video/BV1Ye41127Bw)
+- [UF2022 虚幻引擎游戏性能优化秘笈](https://www.bilibili.com/video/BV1He4y1s729)
 
 ## Black Apple
 
@@ -121,3 +124,8 @@ VMTools 安装失败：
 - Primitive Processing：与原语计数、拒绝等有关的指标。
 - System Memory：系统的内存性能指标。
 - Thermal：与温度相关的指标。
+
+## 问题
+
+UI 字体图集太大，导致读写带宽高：1024 改为 512
+![alt text](image-4.png)
