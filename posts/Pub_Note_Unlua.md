@@ -27,7 +27,7 @@ Unlua2.2.1
 - [Unlua 源码解析](https://www.zhihu.com/people/an-te-tuo-kun-bo-74/posts)
 - [UnLua 解析（一）Object 绑定 lua](https://zhuanlan.zhihu.com/p/100058725)
 - [《黑神话：悟空》用的是什么脚本方案？](https://zhuanlan.zhihu.com/p/715690420)
-
+- [[UnrealCircle]鸣潮——TypeScript、PuerTS、V8优化实践 | 库洛游戏 王宏波](https://www.bilibili.com/video/BV1vW4y117Kh)
 ## 通过 UE 命名空间访问 C++类型发生了什么
 
 UE4.UKismetSystemLibrary.PrintString("hello")
