@@ -11,6 +11,7 @@ title: 游戏性能优化
 - [awesome-game-tester](https://github.com/jianbing/awesome-game-tester)
 - [UFSH2023 虚幻引擎跨平台性能优化实践 | 李赫峥 RealLink](https://www.bilibili.com/video/BV1Ye41127Bw)
 - [UF2022 虚幻引擎游戏性能优化秘笈](https://www.bilibili.com/video/BV1He4y1s729)
+- [腾讯光子陈玉钢谈《Apex Legends Mobile》渲染优化实践](https://bbs.gameres.com/thread_896788_1_1.html)
 
 ## Black Apple
 
@@ -127,5 +128,22 @@ VMTools 安装失败：
 
 ## 问题
 
-UI 字体图集太大，导致读写带宽高：1024 改为 512
+
+- UI 字体图集太大，导致读写带宽高：1024 改为 512
 ![alt text](image-4.png)
+- UI字体图集带宽还是高，改为部分更新图集？
+- 一加Ace2+ColorOS+Adreno TM 730连接RenderDoc显示无法访问Vulkan
+在安卓Log信息中看到一些权限访问的信息，所以把禁止权限监控打开，然后就可以连接了
+- 发现GPU Preemption
+bining和niagara的compute shader发生抢占？
+![alt text](image-9.png)
+## 如何分析SnapDragon Profiler中哪个RenderStage是哪个Pass
+
+- 根据MRTs的数量，可以判断这是BasePass
+![alt text](image-5.png)
+- 对照Surface Width和Surface Height，看以看到这个是基本符合的：
+![alt text](image-6.png)
+- 根据前后的RenderStage，判断出这个是CombineLUTs：
+![alt text](image-7.png)
+比如这里就发现这里的像素着色器的开销尤其的高
+![alt text](image-8.png)
