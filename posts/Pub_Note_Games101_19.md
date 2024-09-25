@@ -141,10 +141,12 @@ ISO：
 - 实际的棱镜也没法把光聚到一块，会有 aberration（像差）
 
 我们研究的棱镜呢是理想化的薄棱镜：
+
 - 厚度忽略不计
 - 能集中光线到焦点
 
 ![Alt text](image-29.png)
+
 - 按照光路的可逆性，过焦点的光线会变成平行光。
 - 棱镜组通过不同的组合，可以改变焦距。
 
@@ -158,6 +160,7 @@ Gauss’ Ray Diagrams：
 
 利用薄棱镜可以解释景深问题：
 ![Alt text](image-34.png)
+
 - 根据前面的公式，$\frac{1}{f} = \frac{1}{z_i} + \frac{1}{z_o}$，我们可以算出成像的位置。
 - Sensor 不在这个位置，一个点会被成像成一个圆，这个圆就是 circle of confusion，所以看上去会模糊。
 - 公式中$z_s$这个距离是确定的，像距$z_i$是确定的，根据右边两个相似三角形，可以得到这么一个关系。所以发现 circle of confusion 和光圈大小成正比。
@@ -168,35 +171,42 @@ Gauss’ Ray Diagrams：
 
 ![Alt text](image-36.png)
 ![Alt text](image-37.png)
-- 这样F-Number和焦距、光圈大小都关联起来了。
+
+- 这样 F-Number 和焦距、光圈大小都关联起来了。
 
 ![Alt text](image-38.png)
-- 这里的A也就是上边的D，表示光圈的直径。
-- F-Number跟Circle of Confusion成反比，所以为了拍摄清晰的照片，我们需要用F-Number大（直径小）的光圈。
+
+- 这里的 A 也就是上边的 D，表示光圈的直径。
+- F-Number 跟 Circle of Confusion 成反比，所以为了拍摄清晰的照片，我们需要用 F-Number 大（直径小）的光圈。
 
 ## Ray Tracing Ideal Thin Lenses
 
 我们之前在光线追踪的时候是直接从相机位置往像素中心连线，这个其实是默认了一个小孔成像的模型。现在我们可以用薄透镜来模拟这个过程:
 
 ![alt text](image-39.png)
-- 我们先定义sensor有一定的大小（也就是成像平面），然后定义透镜的属性，比如焦距和光圈大小。
+
+- 我们先定义 sensor 有一定的大小（也就是成像平面），然后定义透镜的属性，比如焦距和光圈大小。
 - 再定义物距平面，也就是我们想要拍摄的物体的位置。
 
 ![alt text](image-40.png)
-- x'是屏幕（胶片）像素上的点，然后从透镜上随机取一个点x''。然后会打到物距平面上的x'''（根据物距相距的关系，其实也就是跟平行线相交的点）。
-- 这条光线的结果就会被记录到x'对应的像素上。
+
+- x'是屏幕（胶片）像素上的点，然后从透镜上随机取一个点 x''。然后会打到物距平面上的 x'''（根据物距相距的关系，其实也就是跟平行线相交的点）。
+- 这条光线的结果就会被记录到 x'对应的像素上。
 
 ## Depth of Field（FYI）
 
-我们来用defocus blur来定义景深：
+我们来用 defocus blur 来定义景深：
 ![alt text](image-41.png)
 
 ![alt text](image-42.png)
-- 在成像平面附近的一段区域内，这个区域内的circle of confusion都是足够小的。
-- 一个像素不是一个点，而是有一定大小的，所以我们可以认为只要circle of confusion比像素小，我们就可以认为这个区域内的成像是清晰的。
+
+- 在成像平面附近的一段区域内，这个区域内的 circle of confusion 都是足够小的。
+- 一个像素不是一个点，而是有一定大小的，所以我们可以认为只要 circle of confusion 比像素小，我们就可以认为这个区域内的成像是清晰的。
 
 ![alt text](image-43.png)
+
 - 根据前面的公式，我们可以算出在处于这个范围的物距
 
 ![Alt text](image-44.png)
+
 - 可以在这个网页试试：https://graphics.stanford.edu/courses/cs178/applets/dof.html
