@@ -170,7 +170,7 @@ Ray Generation：
 
 ![Alt text](image-32.png)
 
-- 过去 Ray Tracing 就是指 Whitted-Style 的光线追踪，现在我们把所有的光线传播方法的大集合
+- 过去 Ray Tracing 就是指 Whitted-Style 的光线追踪，现在我们把所有的光线传播方法的大集合叫做光线追踪。
 - 比如单向/双向的 Path Tracing
 - Photon Mapping（光子映射）
 - Metropolis Light Transport（MLT）
