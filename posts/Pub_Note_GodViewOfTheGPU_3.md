@@ -221,3 +221,16 @@ NVIDIA 在 GPU 上做 MIMD，用了一个取巧的方式：
 - GPU 可以大量使用计算掩盖访存，对 cache 的要求小了很多。
 - 而 CPU 为了降低访存的延迟，需要很大的芯片面积做多级 cache。
 - cache 的功耗很大，因此 GPU 的这种设计也能进一步降低功耗。
+
+## 补充
+
+- [GPU 中的 SM 和 warp 的关系](https://blog.csdn.net/feng__shuai/article/details/108401793)
+- [基本概念：线程块（Thread Block）与 Warp 的区别、SM、Grid、Dimension](https://blog.csdn.net/m0_63471305/article/details/139839856)
+
+SM 和 warp 的关系：
+
+- SM 是 GPU 中的一个基本的硬件组件
+- 而 warp 是 GPU 中的一个基本的调度单元，也就是我们前面说的有多个并行车道的道路。
+- 一个线程块（Thread Block）由多个线程组成，这些线程可以在执行过程中协作。线程块中的线程可以通过共享内存进行通信，并使用同步原语进行同步。
+- 一个线程块由若干个 warp 组成。例如，如果一个线程块包含 256 个线程，那么这个线程块将被划分为 8 个 warp（256/32 = 8）。这种划分是由硬件自动完成的，程序员不需要手动管理 warp。
+- 线程块是程序员定义的逻辑分组，一个线程块的多个 warp 可以在同一个 SM 上同时执行，也可以分时复用 SM 的资源。
